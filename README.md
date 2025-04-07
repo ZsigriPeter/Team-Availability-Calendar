@@ -78,5 +78,3 @@ Database: PostgreSQL
 Authentication: Django Auth + JWT
 
 Calendar Integration: Google Calendar API, Outlook API
-
-Deployment: Docker + AWS/GCP/Vercel
