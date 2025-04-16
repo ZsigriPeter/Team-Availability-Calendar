@@ -1,12 +1,15 @@
+// App.tsx
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import WeeklyViewPage from './pages/WeeklyViewPage';
 import AvailabilityPage from './pages/AvailabilityPage';
 import RegisterPage from '@/pages/RegisterPage';
 import LoginPage from '@/pages/LoginPage';
+import { Navbar } from './components/Navbar';
 
 function App() {
   return (
     <Router>
+      <Navbar />
       <Routes>
         <Route path="/" element={<WeeklyViewPage />} />
         <Route path="/events" element={<AvailabilityPage />} />
@@ -16,6 +19,6 @@ function App() {
       </Routes>
     </Router>
   );
-};
+}
 
 export default App;
