@@ -63,10 +63,9 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({ onEventCreat
                 {days.map(day => {
                   const selected = selectedSlots.some(slot => slot.day === day && slot.hour === hour);
 
-                  // Match event data
                   const matchingEvent = eventData.find(event => {
                     const eventDay = getDayName(event.date);
-                    const eventHour = event.start_time.slice(0, 5); // 'HH:MM'
+                    const eventHour = event.start_time.slice(0, 5);
                     return eventDay === day && eventHour === hour;
                   });
 
