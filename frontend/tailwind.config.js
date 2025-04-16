@@ -16,8 +16,11 @@ module.exports = {
         colors: {
           background: 'oklch(1 0 0)',
           foreground: 'oklch(0.145 0 0)',
-          // etc.
+          border: 'oklch(0.85 0 0)',      // Add this
+          ring: 'oklch(0.5 0 0)',         // Add this too
+          // more as needed...
         }
+        
       },
     },
     plugins: [],

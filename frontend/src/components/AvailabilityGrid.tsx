@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { EventModal } from './EventModal';
+import { UserEvent } from '../../interfaces';
+import { format, parseISO } from 'date-fns';
 
 const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const hours = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00`);
@@ -15,9 +17,10 @@ interface AvailabilityGridProps {
     type: 'solo' | 'group';
     description: string;
   }) => void;
+  eventData: UserEvent[];
 }
 
-export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({ onEventCreate }) => {
+export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({ onEventCreate, eventData }) => {
   const [selectedSlots, setSelectedSlots] = useState<TimeSlot[]>([]);
   const [isModalOpen, setModalOpen] = useState(false);
 
@@ -34,6 +37,11 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({ onEventCreat
     onEventCreate({ slots: selectedSlots, type, description });
     setSelectedSlots([]);
     setModalOpen(false);
+  };
+
+  const getDayName = (dateStr: string) => {
+    const date = parseISO(dateStr);
+    return format(date, 'EEEE'); // returns 'Monday', 'Tuesday', etc.
   };
 
   return (
@@ -54,12 +62,29 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({ onEventCreat
                 <td className="text-right pr-2 text-sm text-gray-600 border border-gray-300">{hour}</td>
                 {days.map(day => {
                   const selected = selectedSlots.some(slot => slot.day === day && slot.hour === hour);
+
+                  // Match event data
+                  const matchingEvent = eventData.find(event => {
+                    const eventDay = getDayName(event.date);
+                    const eventHour = event.start_time.slice(0, 5); // 'HH:MM'
+                    return eventDay === day && eventHour === hour;
+                  });
+
+                  const hasEvent = !!matchingEvent;
+
                   return (
                     <td
                       key={day + hour}
-                      className={`h-8 cursor-pointer border border-gray-300 ${selected ? 'bg-blue-400' : 'hover:bg-gray-200'}`}
+                      className={`h-8 cursor-pointer border border-gray-300 relative
+                        ${selected ? 'bg-blue-400' : hasEvent ? 'bg-green-300 hover:bg-green-400' : 'hover:bg-gray-200'}`}
                       onClick={() => toggleSlot(day, hour)}
-                    ></td>
+                    >
+                      {hasEvent && (
+                        <div className="text-[10px] text-gray-800 truncate px-1">
+                          {matchingEvent?.description}
+                        </div>
+                      )}
+                    </td>
                   );
                 })}
               </tr>
