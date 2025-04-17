@@ -45,21 +45,21 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({ onEventCreat
   };
 
   return (
-    <div className="space-y-4">
-      <div className="overflow-x-auto">
-        <table className="table-fixed border-collapse w-full">
+    <div className="space-y-4 bg-white dark:bg-gray-900 text-black dark:text-white p-2 rounded-md">
+      <div className="w-full overflow-x-auto">
+      <table className="w-full sm:table-fixed border-collapse border border-gray-300 dark:border-gray-700">
           <thead>
             <tr>
               <th className="w-24"></th>
               {days.map(day => (
-                <th key={day} className="text-center px-2 py-1 border border-gray-300">{day}</th>
+                <th key={day} className="text-center px-2 py-1 border border-gray-300 dark:border-gray-700">{day}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {hours.map(hour => (
               <tr key={hour}>
-                <td className="text-right pr-2 text-sm text-gray-600 border border-gray-300">{hour}</td>
+                <td className="w-16 px-1 text-[10px] text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-700 text-right">{hour}</td>
                 {days.map(day => {
                   const selected = selectedSlots.some(slot => slot.day === day && slot.hour === hour);
 
@@ -74,14 +74,19 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({ onEventCreat
                   return (
                     <td
                       key={day + hour}
-                      className={`h-8 cursor-pointer border border-gray-300 relative
-                        ${selected ? 'bg-blue-400' : hasEvent ? 'bg-green-300 hover:bg-green-400' : 'hover:bg-gray-200'}`}
+                      className={`h-8 cursor-pointer border border-gray-300 dark:border-gray-700 relative
+                        ${selected
+                          ? 'bg-blue-400 dark:bg-blue-600'
+                          : hasEvent
+                            ? 'bg-green-300 dark:bg-green-600 hover:bg-green-400 dark:hover:bg-green-500'
+                            : 'hover:bg-gray-200 dark:hover:bg-gray-700'}
+                      `}
                       onClick={() => toggleSlot(day, hour)}
                     >
                       {hasEvent && (
-                        <div className="text-[10px] text-gray-800 truncate px-1">
-                          {matchingEvent?.description}
-                        </div>
+                        <div className="text-[10px] text-gray-800 dark:text-gray-100 truncate px-1 whitespace-nowrap overflow-hidden">
+                        {matchingEvent?.description}
+                      </div>
                       )}
                     </td>
                   );
