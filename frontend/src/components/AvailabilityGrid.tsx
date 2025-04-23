@@ -41,7 +41,7 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({ onEventCreat
 
   const getDayName = (dateStr: string) => {
     const date = parseISO(dateStr);
-    return format(date, 'EEEE'); // returns 'Monday', 'Tuesday', etc.
+    return format(date, 'EEEE');
   };
 
   return (

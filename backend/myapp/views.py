@@ -1,7 +1,7 @@
 from django.shortcuts import render
-from rest_framework import generics
-from .models import UserEvent, Group
-from .serializers import UserEventSerializer, GroupSerializer, UserSerializer
+from rest_framework import generics, viewsets, permissions
+from .models import UserEvent, Group, GroupMembership
+from .serializers import UserEventSerializer, GroupSerializer, UserSerializer, GroupMembershipSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -35,3 +35,16 @@ class FilteredUserEventView(APIView):
         )
         serializer = UserEventSerializer(user_events, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class GroupViewSet(viewsets.ModelViewSet):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+class GroupMembershipViewSet(viewsets.ModelViewSet):
+    queryset = GroupMembership.objects.all()
+    serializer_class = GroupMembershipSerializer
+    permission_classes = [permissions.IsAuthenticated]

@@ -2,7 +2,6 @@
 import { AvailabilityGrid } from "@/components/AvailabilityGrid";
 import { useEffect,useState } from "react";
 
-// Define the handleEventCreate function
 const handleEventCreate = (event: {
     slots: { day: string; hour: string }[];
     type: 'solo' | 'group';
@@ -25,8 +24,8 @@ const fetchAvailability = async (userId: number, startDate:string, endDate:strin
 
 export default function AvailabilityPage() {
   const [userId,setUserId] = useState(1); // Replace with actual user ID
-  const [startDate,setStartDate] = useState('2025-04-10'); // Replace with actual start date
-  const [endDate,setEndDate] = useState('2025-04-16'); // Replace with actual end date
+  const [startDate,setStartDate] = useState('2025-04-14'); // Replace with actual start date
+  const [endDate,setEndDate] = useState('2025-04-20'); // Replace with actual end date
 
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);

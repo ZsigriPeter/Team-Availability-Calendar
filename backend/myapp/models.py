@@ -5,10 +5,19 @@ from django.core.exceptions import ValidationError
 
 class Group(models.Model):
     name = models.CharField(max_length=100)
-    members = models.ManyToManyField(User)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
+
+class GroupMembership(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='members')
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'group')
 
 class UserEvent(models.Model):
     TYPE_CHOICES = [
