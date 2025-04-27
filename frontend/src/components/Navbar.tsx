@@ -15,6 +15,8 @@ export const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleDarkMode }) => {
       <Link to="/register">Register</Link>
       <Link to="/login">Login</Link>
       <Link to="/events">Availability</Link>
+      <Link to="/group/create">Create Group</Link>
+      <Link to="/group/search">Join Group</Link>
         <button
           onClick={toggleDarkMode}
           className="px-3 py-1 rounded border dark:border-white border-gray-800 text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition"

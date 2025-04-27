@@ -14,8 +14,8 @@ export const LoginForm: React.FC = () => {
       const tokens = await loginUser({ username, password });
       localStorage.setItem('accessToken', tokens.access);
       localStorage.setItem('refreshToken', tokens.refresh);
+      localStorage.setItem('userName', username);
       setStatus('success');
-      // Optionally redirect to dashboard or availability page
     } catch (err: any) {
       setStatus(err.message || 'Login failed');
     }

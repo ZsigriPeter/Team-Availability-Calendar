@@ -19,6 +19,6 @@ export interface LoginData {
       throw new Error(result?.detail || 'Login failed');
     }
   
-    return result; // Usually returns { access: "...", refresh: "..." }
+    return result;
   }
   
