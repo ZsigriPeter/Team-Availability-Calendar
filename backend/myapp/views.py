@@ -96,3 +96,10 @@ def get_user_id(request, username):
         return Response({"detail": "No User found"}, status=status.HTTP_404_NOT_FOUND)
     
     
+class UserDataView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user  # This will be the logged-in user based on the JWT token
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
