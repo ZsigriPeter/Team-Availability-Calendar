@@ -2,18 +2,20 @@
 import { useState } from "react";
 import { searchGroups, joinGroup } from "@/api/groups";
 import GroupCard from "@/components/GroupCard";
+import { useNavigate } from "react-router-dom";
 
 export default function SearchGroupsPage() {
+  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
 
   const handleSearch = async () => {
-    const data = await searchGroups(query);
+    const data = await searchGroups(query, navigate);
     setResults(data);
   };
 
   const handleJoin = async (id: number) => {
-    await joinGroup(id);
+    await joinGroup(id,navigate);
     alert("Joined group!");
   };
 

@@ -13,12 +13,6 @@ export default {
         lg: 'var(--radius)',
         xl: 'calc(var(--radius) + 4px)',
       },
-      colors: {
-        background: 'var(--background)',
-        foreground: 'var(--foreground)',
-        border: 'oklch(0.85 0 0)',
-        ring: 'oklch(0.5 0 0)',
-      },
     },
   },
   plugins: [],

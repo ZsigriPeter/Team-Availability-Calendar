@@ -61,11 +61,9 @@ def join_group(request, group_id):
 
     group = get_object_or_404(Group, id=group_id)
 
-    # Check if membership already exists
     if GroupMembership.objects.filter(user=user, group=group).exists():
         return Response({"detail": "Already a member of this group."}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Create the membership
     GroupMembership.objects.create(user=user, group=group)
 
     return Response({"detail": "Joined group successfully."}, status=status.HTTP_201_CREATED)

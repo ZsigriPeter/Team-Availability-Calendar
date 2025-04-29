@@ -10,8 +10,11 @@ import SearchGroupPage from '@/pages/SearchGroupsPage';
 import { Navbar } from './components/Navbar';
 
 function App() {
-  const [darkMode, setDarkMode] = useState(() => {
-    return localStorage.getItem('theme') === 'dark';
+  const [darkMode, setDarkMode] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('theme') === 'dark';
+    }
+    return false;
   });
 
   useEffect(() => {
