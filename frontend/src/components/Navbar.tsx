@@ -6,24 +6,22 @@ interface NavbarProps {
   toggleDarkMode: () => void;
 }
 
+
 export const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleDarkMode }) => {
   return (
     <nav className="bg-white dark:bg-gray-900 text-black dark:text-white shadow-md px-4 py-2 flex justify-between items-center">
-
-    <div className="text-lg font-bold">Team Calendar</div>
     <div className="flex items-center space-x-4">
-    <Link to="/" className="text-black dark:text-white hover:underline">Home</Link>
-    <Link to="/register" className="text-black dark:text-white hover:underline">Register</Link>
-    <Link to="/login" className="text-black dark:text-white hover:underline">Login</Link>
-    <Link to="/events" className="text-black dark:text-white hover:underline">Availability</Link>
-    <Link to="/group/create" className="text-black dark:text-white hover:underline">Create Group</Link>
-    <Link to="/group/search" className="text-black dark:text-white hover:underline">Join Group</Link>
+    <Link to="/" className="btn-link">Home</Link>
+    <Link to="/register" className="btn-link">Register</Link>
+    <Link to="/login" className="btn-link">Login</Link>
+    <Link to="/events" className="btn-link">Availability</Link>
+    <Link to="/group" className="btn-link">Groups</Link>
     <button
     onClick={() => {
       localStorage.clear();
       window.location.href = '/login';
     }}
-    className="text-black dark:text-white hover:underline">
+    className="btn-link">
       Logout
     </button>
     <button

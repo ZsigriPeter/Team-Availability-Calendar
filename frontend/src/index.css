@@ -3,6 +3,15 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+.btn-link {
+  @apply text-sm rounded px-3 py-1 transition border border-transparent 
+    hover:border-gray-800 dark:hover:border-white 
+    hover:bg-gray-200 dark:hover:bg-gray-700 
+    text-black dark:text-white 
+    hover:text-black dark:hover:text-white;
+}
+
+
 body {
   font-family: 'Inter', sans-serif;
 }

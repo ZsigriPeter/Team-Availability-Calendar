@@ -1,7 +1,7 @@
 // api/groups.ts
 import { fetchWithAuth } from "@/utils/fetchWithAuth";
 import { getAuthHeaders } from "./authHeaders";
-import { NavigateFunction } from "react-router-dom";  // <-- Important
+import { NavigateFunction } from "react-router-dom";
 
 export async function createGroup(name: string, navigate: NavigateFunction) {
   await fetchWithAuth("/api/groups/", {
@@ -31,4 +31,12 @@ export async function leaveGroup(groupId: number, navigate: NavigateFunction) {
     method: "POST",
     headers: getAuthHeaders(),
   }, navigate);
+}
+
+export async function getMyGroups(navigate: NavigateFunction) {
+  const res = await fetchWithAuth("/api/groups/my-groups/", {
+    method: "GET",
+    headers: getAuthHeaders(),
+  }, navigate);
+  return res.json();
 }

@@ -84,17 +84,6 @@ def leave_group(request, group_id):
     membership.delete()
 
     return Response({"detail": "Left group successfully."}, status=status.HTTP_200_OK)
-
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_user_id(request, username):
-    try:
-        user = User.objects.get(username=username)
-        return Response({"id": user.id, "username": user.username})
-    except User.DoesNotExist:
-        return Response({"detail": "No User found"}, status=status.HTTP_404_NOT_FOUND)
-    
     
 class UserDataView(APIView):
     permission_classes = [IsAuthenticated]
@@ -103,3 +92,12 @@ class UserDataView(APIView):
         user = request.user
         serializer = UserSerializer(user)
         return Response(serializer.data)
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def my_groups(request):
+    user = request.user
+    memberships = GroupMembership.objects.filter(user=user).select_related('group')
+    groups = [membership.group for membership in memberships]
+    serializer = GroupSerializer(groups, many=True)
+    return Response(serializer.data)

@@ -7,6 +7,7 @@ import RegisterPage from '@/pages/RegisterPage';
 import LoginPage from '@/pages/LoginPage';
 import CreateGroupPage from '@/pages/CreateGroupPage';
 import SearchGroupPage from '@/pages/SearchGroupsPage';
+import GroupsPage from '@/pages/GroupsPage';
 import { Navbar } from './components/Navbar';
 
 function App() {
@@ -37,6 +38,7 @@ function App() {
         <Route path="/events" element={<AvailabilityPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/group" element={<GroupsPage />} />
         <Route path="/group/create" element={<CreateGroupPage />} />
         <Route path="/group/search" element={<SearchGroupPage />} />
       </Routes>
