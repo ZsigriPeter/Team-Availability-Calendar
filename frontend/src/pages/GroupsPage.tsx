@@ -3,6 +3,7 @@ import { searchGroups, joinGroup, createGroup, getMyGroups, leaveGroup } from "@
 import GroupCard from "@/components/GroupCard";
 import GroupForm from "@/components/GroupForm";
 import { useNavigate } from "react-router-dom";
+import toast from 'react-hot-toast';
 
 export default function GroupsPage() {
   const navigate = useNavigate();
@@ -26,19 +27,19 @@ export default function GroupsPage() {
 
   const handleJoin = async (id: number) => {
     await joinGroup(id, navigate);
-    alert("Joined group!");
+    toast.success("Joined group!");
     fetchMyGroups();
   };
 
     const handleLeave = async (id: number) => {
         await leaveGroup(id, navigate);
-        alert("Left group!");
+        toast.success("Left group!");
         fetchMyGroups();
     };
 
   const handleCreate = async (name: string) => {
     await createGroup(name, navigate);
-    alert("Group created!");
+    toast.success("Group created!");
     fetchMyGroups();
   };
 
