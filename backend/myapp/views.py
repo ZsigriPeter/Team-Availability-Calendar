@@ -100,6 +100,6 @@ class UserDataView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        user = request.user  # This will be the logged-in user based on the JWT token
+        user = request.user
         serializer = UserSerializer(user)
         return Response(serializer.data)

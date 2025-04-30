@@ -1,5 +1,10 @@
 // src/api/userData.ts
-export async function getUserData() {
+
+import { fetchWithAuth } from "@/utils/fetchWithAuth";
+import { NavigateFunction } from "react-router-dom";
+
+
+export async function getUserData( navigate: NavigateFunction) {
   const token = localStorage.getItem('accessToken');
 
   if (!token) {
@@ -7,12 +12,12 @@ export async function getUserData() {
   }
 
   try {
-    const response = await fetch('/api/user-data', {
+    const response = await fetchWithAuth('/api/user-data', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
       },
-    });
+    }, navigate);
 
     if (!response.ok) {
       throw new Error('Failed to fetch user data');

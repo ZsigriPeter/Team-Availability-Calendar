@@ -2,6 +2,7 @@ import { AvailabilityGrid } from "@/components/AvailabilityGrid";
 import { useEffect, useState } from "react";
 import { startOfWeek, addDays, format } from "date-fns";
 import { getUserData } from "@/api/userData";
+import { useNavigate } from "react-router-dom";
 
 const fetchAvailability = async (userId: number, startDate: string, endDate: string) => {
   const response = await fetch(`/api/availability/filter/?id=${userId}&start_date=${startDate}&end_date=${endDate}`);
@@ -12,7 +13,8 @@ const fetchAvailability = async (userId: number, startDate: string, endDate: str
 };
 
 export default function AvailabilityPage() {
-  const [userId, setUserId] = useState(1); // Replace with actual user ID
+  const navigate = useNavigate();
+  const [userId, setUserId] = useState(1);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,8 +29,7 @@ export default function AvailabilityPage() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const userData = await getUserData();
-        console.log("userData", userData);
+        const userData = await getUserData(navigate);
         setUserId(userData.id);
         const fetchedData = await fetchAvailability(userId, startDate, endDate);
         setData(fetchedData);
@@ -39,7 +40,7 @@ export default function AvailabilityPage() {
       }
     };
     fetchData();
-  }, [userId, startDate, endDate]);
+  }, [userId, startDate, endDate, navigate]);
 
   const handleEventCreate = async (event: {
     slots: { date: string; hour: string }[];

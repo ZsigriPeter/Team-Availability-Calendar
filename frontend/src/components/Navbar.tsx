@@ -18,7 +18,14 @@ export const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleDarkMode }) => {
     <Link to="/events" className="text-black dark:text-white hover:underline">Availability</Link>
     <Link to="/group/create" className="text-black dark:text-white hover:underline">Create Group</Link>
     <Link to="/group/search" className="text-black dark:text-white hover:underline">Join Group</Link>
-    
+    <button
+    onClick={() => {
+      localStorage.clear();
+      window.location.href = '/login';
+    }}
+    className="text-black dark:text-white hover:underline">
+      Logout
+    </button>
     <button
   onClick={toggleDarkMode}
   className="px-3 py-1 rounded border dark:border-white border-gray-800 text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition"
