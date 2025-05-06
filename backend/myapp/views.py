@@ -40,14 +40,18 @@ class FilteredUserEventView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class GroupViewSet(viewsets.ModelViewSet):
-    queryset = Group.objects.all()
     serializer_class = GroupSerializer
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [filters.SearchFilter]
     search_fields = ['name']
 
+    def get_queryset(self):
+        user_groups = GroupMembership.objects.filter(user=self.request.user).values_list('group_id', flat=True)
+        return Group.objects.exclude(id__in=user_groups)
+
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+
 
 class GroupMembershipViewSet(viewsets.ModelViewSet):
     queryset = GroupMembership.objects.all()
