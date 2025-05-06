@@ -24,9 +24,14 @@ class UserEventSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class GroupSerializer(serializers.ModelSerializer):
+    member_count = serializers.SerializerMethodField()
+
     class Meta:
         model = Group
-        fields = ['id', 'name', 'owner', 'created_at']
+        fields = ['id', 'name', 'owner', 'created_at', 'member_count']
+
+    def get_member_count(self, obj):
+        return obj.members.count()
 
 class GroupMembershipSerializer(serializers.ModelSerializer):
     class Meta:

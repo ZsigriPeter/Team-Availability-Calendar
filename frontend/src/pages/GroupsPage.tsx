@@ -49,7 +49,7 @@ export default function GroupsPage() {
         <h2 className="text-2xl mb-2">Your Groups</h2>
         <div className="space-y-2">
           {myGroups.map((group: any) => (
-            <GroupCard key={group.id} id={group.id} name={group.name} actionLabel="Leave" onAction={handleLeave}/>
+            <GroupCard key={group.id} id={group.id} name={group.name} actionLabel="Leave" onAction={handleLeave} memberCount={group.member_count}/>
           ))}
         </div>
       </section>
@@ -70,7 +70,7 @@ export default function GroupsPage() {
         </div>
         <div className="space-y-2">
           {searchResults.map((group: any) => (
-            <GroupCard key={group.id} id={group.id} name={group.name} onAction={handleJoin} actionLabel="Join" />
+            <GroupCard key={group.id} id={group.id} name={group.name} onAction={handleJoin} actionLabel="Join" memberCount={group.member_count} />
           ))}
         </div>
       </section>
