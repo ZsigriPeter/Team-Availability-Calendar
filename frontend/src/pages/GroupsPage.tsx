@@ -3,20 +3,21 @@ import { searchGroups, joinGroup, createGroup, getMyGroups, leaveGroup } from "@
 import GroupCard from "@/components/GroupCard";
 import GroupForm from "@/components/GroupForm";
 import { useNavigate } from "react-router-dom";
-import toast from 'react-hot-toast';
+import { Group } from "@/interfaces";
+import toast from "react-hot-toast";
 
 export default function GroupsPage() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [myGroups, setMyGroups] = useState([]);
+  const [searchResults, setSearchResults] = useState<Group[]>([]);
+  const [myGroups, setMyGroups] = useState<Group[]>([]);
 
   useEffect(() => {
     fetchMyGroups();
   }, []);
 
-  const fetchMyGroups = async () => {
-    const data = await getMyGroups(navigate);
+  const fetchMyGroups = async (): Promise<void> => {
+    const data: Group[] = await getMyGroups(navigate);
     setMyGroups(data);
   };
 
@@ -48,7 +49,7 @@ export default function GroupsPage() {
       <section>
         <h2 className="text-2xl mb-2">Your Groups</h2>
         <div className="space-y-2">
-          {myGroups.map((group: any) => (
+          {myGroups.map((group) => (
             <GroupCard key={group.id} id={group.id} name={group.name} actionLabel="Leave" onAction={handleLeave} memberCount={group.member_count}/>
           ))}
         </div>
@@ -69,7 +70,7 @@ export default function GroupsPage() {
           </button>
         </div>
         <div className="space-y-2">
-          {searchResults.map((group: any) => (
+          {searchResults.map((group) => (
             <GroupCard key={group.id} id={group.id} name={group.name} onAction={handleJoin} actionLabel="Join" memberCount={group.member_count} />
           ))}
         </div>

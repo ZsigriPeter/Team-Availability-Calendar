@@ -12,3 +12,10 @@ export interface UserEvent {
     updated_at: string; // ISO datetime string
   }
   
+export interface Group {
+    id: number;
+    name: string;
+    owner: number;
+    created_at: string;
+    member_count: number;
+  }

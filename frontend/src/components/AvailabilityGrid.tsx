@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { EventModal } from './EventModal';
-import { UserEvent } from '../../interfaces';
+import { UserEvent } from '@/interfaces';
 import {
   format,
   parseISO,
