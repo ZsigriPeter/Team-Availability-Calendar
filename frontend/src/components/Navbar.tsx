@@ -1,7 +1,5 @@
 import { Link } from 'react-router-dom'
-import { useNavigate } from "react-router-dom";
-import { getUserData } from '@/api/userData';
-import { useEffect, useState } from 'react';
+import { useUser } from '../contexts/UserContext';
 
 interface NavbarProps {
   darkMode: boolean;
@@ -9,21 +7,7 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleDarkMode }) => {
-  // Check if the user is logged in (you can adjust this based on your actual authentication method)
-  const isLoggedIn = localStorage.getItem('accessToken'); // You might use a different method to check authentication
-  const navigate = useNavigate();
-  const [userName, setUserName] = useState<string>('');
-
-  const fetchUserName = async () => {
-      const data = await getUserData(navigate);
-      setUserName(data.username);
-    };
-
-    useEffect(() => {
-      if (isLoggedIn) {
-        fetchUserName();
-      }
-    }, [isLoggedIn]);
+  const { isLoggedIn, userName, logout } = useUser();
 
   return (
     <nav className="bg-white dark:bg-gray-900 text-black dark:text-white shadow-md px-4 py-2 flex justify-between items-center">
@@ -35,10 +19,7 @@ export const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleDarkMode }) => {
             <Link to="/events" className="btn-link">Availability</Link>
             <Link to="/group" className="btn-link">Groups</Link>
             <button
-              onClick={() => {
-                localStorage.clear();
-                window.location.href = '/login';
-              }}
+              onClick={logout}
               className="btn-link">
               Logout
             </button>

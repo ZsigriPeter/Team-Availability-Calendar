@@ -57,7 +57,6 @@ export default function AvailabilityPage() {
       });
       if (!response.ok) throw new Error("Failed to save event");
       console.log("Event saved:", response);
-      // Refetch after creation
       const updatedData = await fetchAvailability(userId, startDate, endDate);
       setData(updatedData);
     } catch (error) {
@@ -66,7 +65,7 @@ export default function AvailabilityPage() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
+    <div className="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-gray-700">
       {loading ? (
         <div className="text-center">Loading...</div>
       ) : (

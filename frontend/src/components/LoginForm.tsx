@@ -1,11 +1,13 @@
 // src/components/LoginForm.tsx
 import React, { useState } from 'react';
 import { loginUser } from '@/api/loginUser';
+import { useUser } from '../contexts/UserContext';
 
 export const LoginForm: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [status, setStatus] = useState<string | null>(null);
+  const { login } = useUser();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -15,6 +17,7 @@ export const LoginForm: React.FC = () => {
       localStorage.setItem('accessToken', tokens.access);
       localStorage.setItem('refreshToken', tokens.refresh);
       setStatus('success');
+      await login(); // 👈 Now triggers user info fetch and navbar update
     } catch (err: any) {
       setStatus(err.message || 'Login failed');
     }

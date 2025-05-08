@@ -8,6 +8,7 @@ import LoginPage from '@/pages/LoginPage';
 import GroupsPage from '@/pages/GroupsPage';
 import { Navbar } from './components/Navbar';
 import { Toaster } from 'react-hot-toast';
+import { UserProvider } from './contexts/UserContext';
 
 function App() {
   const [darkMode, setDarkMode] = useState<boolean>(() => {
@@ -29,17 +30,21 @@ function App() {
   }, [darkMode]);
 
   return (
-    <Router>
-      <Toaster position="top-right" />
-      <Navbar darkMode={darkMode} toggleDarkMode={() => setDarkMode(prev => !prev)} />
 
-      <Routes>
-        <Route path="/" element={<WeeklyViewPage />} />
-        <Route path="/events" element={<AvailabilityPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/group" element={<GroupsPage />} />
-      </Routes>
+    
+
+    <Router>
+      <UserProvider>
+      <Toaster position="top-right" />
+        <Navbar darkMode={darkMode} toggleDarkMode={() => setDarkMode(prev => !prev)} />
+        <Routes>
+          <Route path="/" element={<WeeklyViewPage />} />
+          <Route path="/events" element={<AvailabilityPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/group" element={<GroupsPage />} />
+        </Routes>
+        </UserProvider>
     </Router>
   );
 }

@@ -32,11 +32,11 @@ export default function GroupsPage() {
     fetchMyGroups();
   };
 
-    const handleLeave = async (id: number) => {
-        await leaveGroup(id, navigate);
-        toast.success("Left group!");
-        fetchMyGroups();
-    };
+  const handleLeave = async (id: number) => {
+    await leaveGroup(id, navigate);
+    toast.success("Left group!");
+    fetchMyGroups();
+  };
 
   const handleCreate = async (name: string) => {
     await createGroup(name, navigate);
@@ -45,42 +45,42 @@ export default function GroupsPage() {
   };
 
   return (
-    <div className="p-8 space-y-8">
-      <section>
-        <h2 className="text-2xl mb-2">Your Groups</h2>
-        <div className="space-y-2">
-          {myGroups.map((group) => (
-            <GroupCard key={group.id} id={group.id} name={group.name} actionLabel="Leave" onAction={handleLeave} memberCount={group.member_count}/>
-          ))}
-        </div>
-      </section>
+    <div className="flex justify-center bg-gray-100 dark:bg-gray-700 min-h-screen py-8">
+      <div className="p-8 space-y-8">
+        <section>
+          <h2 className="text-2xl mb-2">Your Groups</h2>
+          <div className="space-y-2">
+            {myGroups.map((group) => (
+              <GroupCard key={group.id} id={group.id} name={group.name} actionLabel="Leave" onAction={handleLeave} memberCount={group.member_count} />
+            ))}
+          </div>
+        </section>
+        <section>
+          <h2 className="text-2xl mb-2">Search & Join Groups</h2>
+          <div className="flex gap-2 mb-4">
+            <input
+              type="text"
+              className="border px-4 py-2 rounded-xl flex-1 dark:bg-gray-800"
+              placeholder="Search for a group"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+            <button onClick={handleSearch} className="bg-blue-600 text-white px-4 py-2 rounded-xl">
+              Search
+            </button>
+          </div>
+          <div className="space-y-2">
+            {searchResults.map((group) => (
+              <GroupCard key={group.id} id={group.id} name={group.name} onAction={handleJoin} actionLabel="Join" memberCount={group.member_count} />
+            ))}
+          </div>
+        </section>
 
-      <section>
-        <h2 className="text-2xl mb-2">Search & Join Groups</h2>
-        <div className="flex gap-2 mb-4">
-          <input
-            type="text"
-            className="border px-4 py-2 rounded-xl flex-1 dark:bg-gray-800"
-            placeholder="Search for a group"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-          <button onClick={handleSearch} className="bg-blue-600 text-white px-4 py-2 rounded-xl">
-            Search
-          </button>
-        </div>
-        <div className="space-y-2">
-          {searchResults.map((group) => (
-            <GroupCard key={group.id} id={group.id} name={group.name} onAction={handleJoin} actionLabel="Join" memberCount={group.member_count} />
-          ))}
-        </div>
-      </section>
-
-      <section>
-        <h2 className="text-2xl mb-2">Create Group</h2>
-        <GroupForm onSubmit={handleCreate} />
-      </section>
-
+        <section>
+          <h2 className="text-2xl mb-2">Create Group</h2>
+          <GroupForm onSubmit={handleCreate} />
+        </section>
+      </div>
     </div>
   );
 }
