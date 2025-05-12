@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { startOfWeek, addDays, format } from "date-fns";
 import { getUserData } from "@/api/userData";
 import { useNavigate } from "react-router-dom";
+import { getAuthHeaders } from "@/api/authHeaders";
 
 const fetchAvailability = async (userId: number, startDate: string, endDate: string) => {
   const response = await fetch(`/api/availability/filter/?id=${userId}&start_date=${startDate}&end_date=${endDate}`);
@@ -48,11 +49,9 @@ export default function AvailabilityPage() {
     description: string;
   }) => {
     try {
-      const response = await fetch("/api/availability/", {
+      const response = await fetch("/api/submit-events/", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(event),
       });
       if (!response.ok) throw new Error("Failed to save event");

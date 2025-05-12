@@ -30,9 +30,6 @@ function App() {
   }, [darkMode]);
 
   return (
-
-    
-
     <Router>
       <UserProvider>
       <Toaster position="top-right" />

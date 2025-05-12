@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import generics, viewsets, permissions, filters
 from .models import UserEvent, Group, GroupMembership
-from .serializers import UserEventSerializer, GroupSerializer, UserSerializer, GroupMembershipSerializer
+from .serializers import UserEventSerializer, GroupSerializer, UserSerializer, GroupMembershipSerializer, EventSubmissionSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -105,3 +105,13 @@ def my_groups(request):
     groups = [membership.group for membership in memberships]
     serializer = GroupSerializer(groups, many=True)
     return Response(serializer.data)
+
+class EventSlotSubmissionView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        serializer = EventSubmissionSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            events = serializer.save()
+            return Response({"message": f"{len(events)} events created."}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -16,5 +16,6 @@ urlpatterns = [
     path('groups/<int:group_id>/leave/', views.leave_group, name='leave-group'),
     path('user-data/', UserDataView.as_view(), name='user-data'),
     path('groups/my-groups/', views.my_groups, name='my-groups'),
+    path('submit-events/', EventSlotSubmissionView.as_view(), name='submit-events'),
     path('', include(router.urls)),
 ]

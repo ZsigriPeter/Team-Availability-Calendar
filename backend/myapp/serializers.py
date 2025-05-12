@@ -42,3 +42,29 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username']
+
+class SlotSerializer(serializers.Serializer):
+    date = serializers.DateField()
+    hour = serializers.TimeField() 
+
+class EventSubmissionSerializer(serializers.Serializer):
+    description = serializers.CharField()
+    type = serializers.ChoiceField(choices=UserEvent.TYPE_CHOICES)
+    slots = SlotSerializer(many=True)
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        slots = validated_data.pop('slots')
+        created_events = []
+
+        for slot in slots:
+            event = UserEvent.objects.create(
+                user=user if validated_data['type'] == 'solo' else None,
+                description=validated_data['description'],
+                type=validated_data['type'],
+                date=slot['date'],
+                start_time=slot['hour'],
+                end_time=slot['hour'],
+            )
+            created_events.append(event)
+        return created_events
