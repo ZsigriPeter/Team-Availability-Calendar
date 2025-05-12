@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { EventModal } from './EventModal';
 import { UserEvent } from '@/interfaces';
 import {
@@ -10,16 +10,20 @@ import {
   subWeeks,
   isSameDay,
 } from 'date-fns';
+import { useNavigate } from "react-router-dom";
+import { TimeSlot } from '@/interfaces'; // Assuming you have a TimeSlot interface defined
+
+import { getMyGroups } from '@/api/groups'; // Assuming you have a function to fetch user's groups
 
 const hours = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00`);
 
-interface TimeSlot {
-  date: string;
-  hour: string;
-}
-
 interface AvailabilityGridProps {
-  onEventCreate: (event: { slots: TimeSlot[]; type: 'solo' | 'group'; description: string }) => void;
+  onEventCreate: (event: {
+    slots: TimeSlot[];
+    type: 'solo' | 'group';
+    description: string;
+    groupId?: string; // Add this line
+  }) => void;
   eventData: UserEvent[];
   currentDate: Date;
   onDateChange: (date: Date) => void;
@@ -33,25 +37,47 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
 }) => {
   const [selectedSlots, setSelectedSlots] = useState<TimeSlot[]>([]);
   const [isModalOpen, setModalOpen] = useState(false);
+  const [myGroups, setMyGroups] = useState<{ id: string; name: string }[]>([]); // Assuming you have a way to fetch user's groups
+  const navigate = useNavigate();
 
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const daysOfWeek = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
-  const toggleSlot = (day: Date, hour: string) => {
+  useEffect(() => {
+    const fetchGroups = async () => {
+      const groups = await getMyGroups(navigate);
+      setMyGroups(groups);
+    };
+    fetchGroups();
+  }
+  , [navigate]);
+
+  const toggleSlot = (day: Date, hour_start: string, hour_end:string ) => {
     const dateStr = format(day, 'yyyy-MM-dd');
-    const exists = selectedSlots.find(slot => slot.date === dateStr && slot.hour === hour);
+    const exists = selectedSlots.find(slot => slot.date === dateStr && slot.hour_start === hour_start && slot.hour_end === hour_end);
     if (exists) {
-      setSelectedSlots(prev => prev.filter(slot => !(slot.date === dateStr && slot.hour === hour)));
+      setSelectedSlots(prev => prev.filter(slot => !(slot.date === dateStr && slot.hour_start === hour_start && slot.hour_end === hour_end)));
     } else {
-      setSelectedSlots(prev => [...prev, { date: dateStr, hour }]);
+      setSelectedSlots(prev => [...prev, { date: dateStr, hour_start, hour_end }]);
     }
   };
 
-  const handleConfirm = (type: 'solo' | 'group', description: string) => {
-    onEventCreate({ slots: selectedSlots, type, description });
+  const handleConfirm = (
+    type: 'solo' | 'group',
+    description: string,
+    groupId?: string // Mark as optional
+  ) => {
+    onEventCreate({
+      slots: selectedSlots,
+      type,
+      description,
+      ...(type === 'group' && groupId ? { groupId } : {})
+    });
+    
     setSelectedSlots([]);
     setModalOpen(false);
   };
+  
 
   return (
     <div className="space-y-4 bg-white dark:bg-gray-900 text-black dark:text-white p-2 rounded-md">
@@ -100,7 +126,7 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
                 <td className="w-16 px-1 text-[10px] text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-700 text-right">{hour}</td>
                 {daysOfWeek.map(day => {
                   const dateStr = format(day, 'yyyy-MM-dd');
-                  const selected = selectedSlots.some(slot => slot.date === dateStr && slot.hour === hour);
+                  const selected = selectedSlots.some(slot => slot.date === dateStr && slot.hour_start === hour);
                   
                   const matchingEvent = eventData.find(event => {
                     const eventDate = parseISO(event.date);
@@ -119,8 +145,11 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
                           : hasEvent
                             ? 'bg-green-300 dark:bg-green-600 hover:bg-green-400 dark:hover:bg-green-500'
                             : 'hover:bg-gray-200 dark:hover:bg-gray-700'}`}
-                        onClick={() => toggleSlot(day, hour)}
-
+                            onClick={() => {
+                              const start = parseInt(hour.split(':')[0], 10);
+                              const end = String(start + 1).padStart(2, '0') + ':00';
+                              toggleSlot(day, hour, end);
+                            }}
                     >
                       {hasEvent && (
                         <div className="text-[10px] text-gray-800 dark:text-gray-100 truncate px-1 whitespace-nowrap overflow-hidden">
@@ -149,6 +178,7 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
         <EventModal
           onClose={() => setModalOpen(false)}
           onConfirm={handleConfirm}
+          groups= { myGroups }
         />
       )}
     </div>

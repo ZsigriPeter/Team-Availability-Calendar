@@ -44,9 +44,10 @@ export default function AvailabilityPage() {
   }, [userId, startDate, endDate, navigate]);
 
   const handleEventCreate = async (event: {
-    slots: { date: string; hour: string }[];
+    slots: { date: string; hour_start: string; hour_end:string }[];
     type: "solo" | "group";
     description: string;
+    groupId?: string;
   }) => {
     try {
       const response = await fetch("/api/submit-events/", {

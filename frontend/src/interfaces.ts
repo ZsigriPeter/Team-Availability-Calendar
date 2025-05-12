@@ -19,3 +19,9 @@ export interface Group {
     created_at: string;
     member_count: number;
   }
+
+export interface TimeSlot {
+    date: string;
+    hour_start: string;
+    hour_end: string;
+  }
