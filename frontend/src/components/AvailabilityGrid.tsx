@@ -78,6 +78,14 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
     setModalOpen(false);
   };
   
+  const groupColors: Record<number, string> = {
+    1: 'bg-purple-300 dark:bg-purple-600 hover:bg-purple-400 dark:hover:bg-purple-500',
+    2: 'bg-yellow-300 dark:bg-yellow-600 hover:bg-yellow-400 dark:hover:bg-yellow-500',
+    3: 'bg-pink-300 dark:bg-pink-600 hover:bg-pink-400 dark:hover:bg-pink-500',
+    4: 'bg-red-300 dark:bg-red-600 hover:bg-red-400 dark:hover:bg-red-500',
+    // fallback group color below
+  };
+  
 
   return (
     <div className="space-y-4 bg-white dark:bg-gray-900 text-black dark:text-white p-2 rounded-md">
@@ -127,7 +135,7 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
                 {daysOfWeek.map(day => {
                   const dateStr = format(day, 'yyyy-MM-dd');
                   const selected = selectedSlots.some(slot => slot.date === dateStr && slot.hour_start === hour);
-                  
+
                   const matchingEvent = eventData.find(event => {
                     const eventDate = parseISO(event.date);
                     const eventHour = format(parseISO(`${event.date}T${event.start_time}`), 'HH:00');
@@ -136,23 +144,32 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
 
                   const hasEvent = !!matchingEvent;
 
+                  const bgClass = selected
+                    ? 'bg-blue-400 dark:bg-blue-600'
+                    : hasEvent
+                      ? matchingEvent.type === 'solo'
+                        ? 'bg-green-300 dark:bg-green-600 hover:bg-green-400 dark:hover:bg-green-500'
+                        : matchingEvent.group !== null && groupColors[matchingEvent.group] 
+                          ? groupColors[matchingEvent.group]
+                          : 'bg-orange-300 dark:bg-orange-600 hover:bg-orange-400 dark:hover:bg-orange-500'
+
+                      : 'hover:bg-gray-200 dark:hover:bg-gray-700';
+
                   return (
                     <td
                       key={day.toISOString() + hour}
-                      className={`h-8 cursor-pointer border border-gray-300 dark:border-gray-700 relative
-                        ${selected
-                          ? 'bg-blue-400 dark:bg-blue-600'
-                          : hasEvent
-                            ? 'bg-green-300 dark:bg-green-600 hover:bg-green-400 dark:hover:bg-green-500'
-                            : 'hover:bg-gray-200 dark:hover:bg-gray-700'}`}
-                            onClick={() => {
-                              const start = parseInt(hour.split(':')[0], 10);
-                              const end = String(start + 1).padStart(2, '0') + ':00';
-                              toggleSlot(day, hour, end);
-                            }}
+                      className={`h-8 cursor-pointer border border-gray-300 dark:border-gray-700 relative ${bgClass}`}
+                      onClick={() => {
+                        const start = parseInt(hour.split(':')[0], 10);
+                        const end = String(start + 1).padStart(2, '0') + ':00';
+                        toggleSlot(day, hour, end);
+                      }}
                     >
                       {hasEvent && (
-                        <div className="text-[10px] text-gray-800 dark:text-gray-100 truncate px-1 whitespace-nowrap overflow-hidden">
+                        <div
+                          className="text-[10px] text-gray-800 dark:text-gray-100 truncate px-1 whitespace-nowrap overflow-hidden"
+                          title={matchingEvent.type === 'group' ? `Group ID: ${matchingEvent.group}` : ''}
+                        >
                           {matchingEvent?.description}
                         </div>
                       )}
@@ -178,7 +195,7 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
         <EventModal
           onClose={() => setModalOpen(false)}
           onConfirm={handleConfirm}
-          groups= { myGroups }
+          groups={myGroups}
         />
       )}
     </div>
