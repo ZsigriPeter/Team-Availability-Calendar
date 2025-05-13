@@ -9,6 +9,8 @@ from django.contrib.auth.models import User
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
+from django.utils.dateparse import parse_date
+from django.db.models import Q
 
 class UserCreateView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -115,3 +117,26 @@ class EventSlotSubmissionView(APIView):
             events = serializer.save()
             return Response({"message": f"{len(events)} events created."}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    
+class UserEventListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        start_date = parse_date(request.GET.get('start_date'))
+        end_date = parse_date(request.GET.get('end_date'))
+
+        # Get all groups where the user is a member
+        user_group_ids = GroupMembership.objects.filter(user=user).values_list('group_id', flat=True)
+
+        # Filter events
+        events = UserEvent.objects.filter(
+            Q(type='solo', user=user) |
+            Q(type='group', group_id__in=user_group_ids)
+        ).filter(
+            date__range=(start_date, end_date)
+        )
+
+        serializer = UserEventSerializer(events, many=True)
+        return Response(serializer.data)

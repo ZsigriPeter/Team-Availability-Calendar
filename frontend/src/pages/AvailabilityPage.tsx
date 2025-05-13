@@ -1,21 +1,20 @@
 import { AvailabilityGrid } from "@/components/AvailabilityGrid";
 import { useEffect, useState } from "react";
 import { startOfWeek, addDays, format } from "date-fns";
-import { getUserData } from "@/api/userData";
-import { useNavigate } from "react-router-dom";
+import { NavigateFunction, useNavigate } from "react-router-dom";
 import { getAuthHeaders } from "@/api/authHeaders";
+import { fetchWithAuth } from "@/utils/fetchWithAuth";
 
-const fetchAvailability = async (userId: number, startDate: string, endDate: string) => {
-  const response = await fetch(`/api/availability/filter/?id=${userId}&start_date=${startDate}&end_date=${endDate}`);
-  if (!response.ok) {
-    throw new Error("Failed to fetch availability data");
-  }
-  return response.json();
+const fetchAvailability = async (startDate: string, endDate: string, navigate: NavigateFunction) => {
+  const res = await fetchWithAuth(`/api/events/?start_date=${startDate}&end_date=${endDate}`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+    }, navigate);
+    return res.json();
 };
 
 export default function AvailabilityPage() {
   const navigate = useNavigate();
-  const [userId, setUserId] = useState(1);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,9 +29,7 @@ export default function AvailabilityPage() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const userData = await getUserData(navigate);
-        setUserId(userData.id);
-        const fetchedData = await fetchAvailability(userId, startDate, endDate);
+        const fetchedData = await fetchAvailability(startDate, endDate, navigate);
         setData(fetchedData);
       } catch (error) {
         console.error("Error fetching availability data:", error);
@@ -41,7 +38,7 @@ export default function AvailabilityPage() {
       }
     };
     fetchData();
-  }, [userId, startDate, endDate, navigate]);
+  }, [startDate, endDate, navigate]);
 
   const handleEventCreate = async (event: {
     slots: { date: string; hour_start: string; hour_end:string }[];
@@ -57,7 +54,7 @@ export default function AvailabilityPage() {
       });
       if (!response.ok) throw new Error("Failed to save event");
       console.log("Event saved:", response);
-      const updatedData = await fetchAvailability(userId, startDate, endDate);
+      const updatedData = await fetchAvailability( startDate, endDate, navigate);
       setData(updatedData);
     } catch (error) {
       console.error("Failed to create event:", error);
