@@ -1,6 +1,6 @@
 // src/contexts/UserContext.tsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { getUserData } from '../api/userData'; // Adjust path as needed
+import { getUserData } from '../api/userData';
 import { useNavigate } from 'react-router-dom';
 
 interface UserContextType {
@@ -14,8 +14,13 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => !!localStorage.getItem('accessToken'));
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => hasAccessToken());
   const [userName, setUserName] = useState<string>('');
+
+  function hasAccessToken(): boolean {
+    return !!localStorage.getItem('accessToken');
+  }
+  
 
   const login = async () => {
     setIsLoggedIn(true);

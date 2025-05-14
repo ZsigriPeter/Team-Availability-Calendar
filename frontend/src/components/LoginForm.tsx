@@ -17,7 +17,7 @@ export const LoginForm: React.FC = () => {
       localStorage.setItem('accessToken', tokens.access);
       localStorage.setItem('refreshToken', tokens.refresh);
       setStatus('success');
-      await login(); // 👈 Now triggers user info fetch and navbar update
+      await login();
     } catch (err: any) {
       setStatus(err.message || 'Login failed');
     }

@@ -17,7 +17,7 @@ export async function getUserData( navigate: NavigateFunction) {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
-    }, navigate);
+    }, navigate,);
 
     if (!response.ok) {
       throw new Error('Failed to fetch user data');
@@ -26,6 +26,6 @@ export async function getUserData( navigate: NavigateFunction) {
     return await response.json();
   } catch (error) {
     console.error('Error fetching user data:', error);
-    throw error; // rethrow to handle it at a higher level
+    throw error;
   }
 }
