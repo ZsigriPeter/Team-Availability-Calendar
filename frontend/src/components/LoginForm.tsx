@@ -59,6 +59,8 @@ export const LoginForm: React.FC = () => {
     Login
   </button>
 
+  <button >Login with Google</button>
+
   {status === 'success' && (
     <p className="text-green-600 dark:text-green-400">Login successful!</p>
   )}

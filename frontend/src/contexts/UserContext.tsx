@@ -2,6 +2,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { getUserData } from '../api/userData';
 import { useNavigate } from 'react-router-dom';
+import { auth, provider } from "../firebase";
+import { signInWithPopup, signOut } from "firebase/auth";
 
 interface UserContextType {
   isLoggedIn: boolean;
