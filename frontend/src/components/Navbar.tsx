@@ -10,12 +10,12 @@ export const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleDarkMode }) => {
   const { isLoggedIn, userName, logout } = useUser();
 
   return (
-    <nav className="bg-white dark:bg-gray-900 text-black dark:text-white shadow-md px-4 py-2 flex justify-between items-center">
+    <nav className="w-full bg-white dark:bg-gray-900 text-black dark:text-white shadow-md px-4 py-2 flex justify-between items-center">
       <div className="flex items-center space-x-4">
         <Link to="/" className="btn-link">Home</Link>
         {isLoggedIn ? (
           <>
-            <span className="btn-link">{userName}</span>
+            <Link to="/profile" className="btn-link">{userName}</Link>
             <Link to="/events" className="btn-link">Availability</Link>
             <Link to="/group" className="btn-link">Groups</Link>
             <button

@@ -46,7 +46,7 @@ export default function GroupsPage() {
 
   return (
     <div className="flex justify-center bg-gray-100 dark:bg-gray-700 min-h-screen py-8">
-      <div className="p-8 space-y-8">
+      <div className="p-8 space-y-8 w-full max-w-2xl">
         <section>
           <h2 className="text-2xl mb-2">Your Groups</h2>
           <div className="space-y-2">
