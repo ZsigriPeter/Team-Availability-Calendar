@@ -2,6 +2,8 @@ from django.urls import path, include
 from .views import *
 from rest_framework.routers import DefaultRouter
 from . import views
+from django.urls import path
+from .views import GoogleLoginView
 
 router = DefaultRouter()
 router.register(r'group-memberships', GroupMembershipViewSet)
@@ -18,5 +20,6 @@ urlpatterns = [
     path('groups/my-groups/', views.my_groups, name='my-groups'),
     path('submit-events/', EventSlotSubmissionView.as_view(), name='submit-events'),
     path('events/', UserEventListView.as_view(), name='user-event-list'),
+    path('google-login/', GoogleLoginView.as_view(), name='google-login'),
     path('', include(router.urls)),
 ]

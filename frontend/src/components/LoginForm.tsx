@@ -2,12 +2,23 @@
 import React, { useState } from 'react';
 import { loginUser } from '@/api/loginUser';
 import { useUser } from '../contexts/UserContext';
+import { FcGoogle } from "react-icons/fc";
 
 export const LoginForm: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [status, setStatus] = useState<string | null>(null);
-  const { login } = useUser();
+  const { login, loginFirebase } = useUser();
+
+  const handleGoogleLogin = async () => {
+  setStatus(null);
+  try {
+    await loginFirebase();
+    setStatus('success');
+  } catch (err: any) {
+    setStatus(err.message || 'Google login failed');
+  }
+};
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,12 +65,20 @@ export const LoginForm: React.FC = () => {
 
   <button
     type="submit"
-    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded dark:bg-green-700 dark:hover:bg-green-800"
+    className="bg-green-600 hover:bg-green-700 w-full text-white px-4 py-2 rounded dark:bg-green-700 dark:hover:bg-green-800"
   >
     Login
   </button>
 
-  <button >Login with Google</button>
+  <button
+  type="button"
+  onClick={handleGoogleLogin}
+  className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-md w-full max-w-xs mx-auto transition-colors duration-200 dark:bg-green-700 dark:hover:bg-green-800"
+>
+  <FcGoogle className="w-5 h-5" />
+  Login with Google
+</button>
+
 
   {status === 'success' && (
     <p className="text-green-600 dark:text-green-400">Login successful!</p>

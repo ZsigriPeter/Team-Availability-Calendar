@@ -9,7 +9,8 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
+import firebase_admin
+from firebase_admin import credentials
 from pathlib import Path
 from datetime import timedelta
 
@@ -28,6 +29,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+cred = credentials.Certificate("firebase_key.json")
+firebase_admin.initialize_app(cred)
 
 # Application definition
 

@@ -10,6 +10,8 @@ interface UserContextType {
   userName: string;
   login: () => Promise<void>;
   logout: () => void;
+  loginFirebase: () => Promise<void>;
+  logoutFirebase: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -23,16 +25,55 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return !!localStorage.getItem('accessToken');
   }
   
+const loginFirebase = async () => {
+  try {
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+    const idToken = await user.getIdToken();
+
+    // Send ID token to Django backend
+    const res = await fetch("/api/google-login/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ idToken }),
+    });
+
+    if (!res.ok) {
+      throw new Error("Backend authentication failed");
+    }
+
+    const data = await res.json();
+
+    // Save your app's JWT from the backend
+    localStorage.setItem("accessToken", data.access);
+    localStorage.setItem("refreshToken", data.refresh);
+    
+    setUserName(user.displayName || "Unknown");
+    setIsLoggedIn(true);
+  } catch (err) {
+    console.error("Google login error:", err);
+  }
+};
+
+
+const logoutFirebase = async () => {
+  await signOut(auth);
+  localStorage.removeItem('accessToken');
+  setIsLoggedIn(false);
+  setUserName('');
+  navigate('/login');
+};
+
 
   const login = async () => {
+  try {
+    const data = await getUserData(navigate);
+    setUserName(data.username);
     setIsLoggedIn(true);
-    try {
-      const data = await getUserData(navigate);
-      setUserName(data.username);
-    } catch (err) {
-      console.error('Failed to fetch user data:', err);
-    }
-  };
+  } catch (err) {
+    console.error('Failed to fetch user data:', err);
+  }
+};
 
   const logout = () => {
     localStorage.removeItem('accessToken');
@@ -49,7 +90,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   return (
-    <UserContext.Provider value={{ isLoggedIn, userName, login, logout }}>
+    <UserContext.Provider value={{ isLoggedIn, userName, login, logout, loginFirebase, logoutFirebase }}>
       {children}
     </UserContext.Provider>
   );
@@ -62,3 +103,4 @@ export const useUser = (): UserContextType => {
   }
   return context;
 };
+

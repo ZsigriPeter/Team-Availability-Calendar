@@ -8,7 +8,7 @@ const firebaseConfig = {
   projectId: "team-availability-calend-7025a",
   storageBucket: "team-availability-calend-7025a.firebasestorage.app",
   messagingSenderId: "46186332023",
-  appId: "1:46186332023:web:21269c3e79c9c449e46b72"
+  appId: "1:46186332023:web:7ba89089f003228fe46b72"
 };
 
 // Initialize Firebase
