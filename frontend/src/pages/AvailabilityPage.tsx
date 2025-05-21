@@ -4,6 +4,7 @@ import { startOfWeek, addDays, format } from "date-fns";
 import { NavigateFunction, useNavigate } from "react-router-dom";
 import { getAuthHeaders } from "@/api/authHeaders";
 import { fetchWithAuth } from "@/utils/fetchWithAuth";
+import { UserEvent } from "@/interfaces";
 
 const fetchAvailability = async (startDate: string, endDate: string, navigate: NavigateFunction) => {
   const res = await fetchWithAuth(`/api/events/?start_date=${startDate}&end_date=${endDate}`, {
@@ -61,6 +62,22 @@ export default function AvailabilityPage() {
     }
   };
 
+  const handleExtEventCreate = async (event: UserEvent) => {
+    try {
+      const response = await fetch("/api/submit-event/", {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify(event),
+      });
+      if (!response.ok) throw new Error("Failed to save event");
+      console.log("Event saved:", response);
+      const updatedData = await fetchAvailability( startDate, endDate, navigate);
+      setData(updatedData);
+    } catch (error) {
+      console.error("Failed to create event:", error);
+    }
+  };
+
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-gray-700">
       {loading ? (
@@ -69,6 +86,7 @@ export default function AvailabilityPage() {
         <div className="p-4">
           <AvailabilityGrid
             onEventCreate={handleEventCreate}
+            onExtEventCreate={handleExtEventCreate}
             eventData={data}
             currentDate={currentDate}
             onDateChange={setCurrentDate}

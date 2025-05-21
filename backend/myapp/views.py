@@ -152,6 +152,16 @@ class EventSlotSubmissionView(APIView):
             return Response({"message": f"{len(events)} events created."}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+class EventSubmissionView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        serializer = UserEventSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            events = serializer.save()
+            return Response({"message": f"{len(events)} events created."}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
     
 class UserEventListView(APIView):
     permission_classes = [IsAuthenticated]

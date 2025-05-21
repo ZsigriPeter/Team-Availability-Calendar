@@ -11,9 +11,10 @@ import {
   isSameDay,
 } from 'date-fns';
 import { useNavigate } from "react-router-dom";
-import { TimeSlot } from '@/interfaces'; // Assuming you have a TimeSlot interface defined
+import { TimeSlot } from '@/interfaces';
 
-import { getMyGroups } from '@/api/groups'; // Assuming you have a function to fetch user's groups
+import { getMyGroups } from '@/api/groups';
+import { EventModalExtended } from './EventModalExtended';
 
 const hours = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00`);
 
@@ -22,8 +23,9 @@ interface AvailabilityGridProps {
     slots: TimeSlot[];
     type: 'solo' | 'group';
     description: string;
-    groupId?: string; // Add this line
+    groupId?: string;
   }) => void;
+  onExtEventCreate: (event: UserEvent) => void;
   eventData: UserEvent[];
   currentDate: Date;
   onDateChange: (date: Date) => void;
@@ -31,13 +33,15 @@ interface AvailabilityGridProps {
 
 export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
   onEventCreate,
+  onExtEventCreate,
   eventData,
   currentDate,
   onDateChange,
 }) => {
   const [selectedSlots, setSelectedSlots] = useState<TimeSlot[]>([]);
   const [isModalOpen, setModalOpen] = useState(false);
-  const [myGroups, setMyGroups] = useState<{ id: string; name: string }[]>([]); // Assuming you have a way to fetch user's groups
+  const [isModalExtOpen, setModalExtOpen] = useState(false);
+  const [myGroups, setMyGroups] = useState<{ id: string; name: string }[]>([]);
   const navigate = useNavigate();
 
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
@@ -65,7 +69,7 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
   const handleConfirm = (
     type: 'solo' | 'group',
     description: string,
-    groupId?: string // Mark as optional
+    groupId?: string
   ) => {
     onEventCreate({
       slots: selectedSlots,
@@ -76,6 +80,33 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
     
     setSelectedSlots([]);
     setModalOpen(false);
+  };
+
+  const handleExtConfirm = (
+    type: 'solo' | 'group',
+    description: string,
+    eventDate: string,
+    eventTimeStart: string,
+    eventTimeEnd: string,
+    eventLocation?: string,
+    groupId?: string
+  ) => {
+    onExtEventCreate({
+      type,
+      description,
+      date: eventDate,
+      start_time: eventTimeStart,
+      end_time: eventTimeEnd,
+      location: eventLocation,
+      ...(type === 'group' && groupId ? { groupId } : {}),
+      id: 0,
+      user: null,
+      group: null,
+      created_at: '',
+      updated_at: ''
+    });
+    
+    setModalExtOpen(false);
   };
   
   const groupColors: Record<number, string> = {
@@ -102,6 +133,12 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
             className="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
           >
             Next Week
+          </button>
+          <button
+            onClick={() => () => setModalExtOpen(true)}
+            className="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
+          >
+            Add Event
           </button>
         </div>
 
@@ -195,6 +232,13 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
         <EventModal
           onClose={() => setModalOpen(false)}
           onConfirm={handleConfirm}
+          groups={myGroups}
+        />
+      )}
+      {isModalExtOpen && (
+        <EventModalExtended
+          onClose={() => setModalExtOpen(false)}
+          onConfirm={handleExtConfirm}
           groups={myGroups}
         />
       )}

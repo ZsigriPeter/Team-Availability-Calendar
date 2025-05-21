@@ -31,7 +31,6 @@ const loginFirebase = async () => {
     const user = result.user;
     const idToken = await user.getIdToken();
 
-    // Send ID token to Django backend
     const res = await fetch("/api/google-login/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -44,7 +43,6 @@ const loginFirebase = async () => {
 
     const data = await res.json();
 
-    // Save your app's JWT from the backend
     localStorage.setItem("accessToken", data.access);
     localStorage.setItem("refreshToken", data.refresh);
     
@@ -55,7 +53,6 @@ const loginFirebase = async () => {
   }
 };
 
-
 const logoutFirebase = async () => {
   await signOut(auth);
   localStorage.removeItem('accessToken');
@@ -63,7 +60,6 @@ const logoutFirebase = async () => {
   setUserName('');
   navigate('/login');
 };
-
 
   const login = async () => {
   try {

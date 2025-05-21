@@ -38,11 +38,6 @@ class GroupMembershipSerializer(serializers.ModelSerializer):
         model = GroupMembership
         fields = ['id', 'user', 'group', 'joined_at']
 
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['id', 'username']
-
 class SlotSerializer(serializers.Serializer):
     date = serializers.DateField()
     hour_start = serializers.TimeField() 
