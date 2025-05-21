@@ -54,9 +54,9 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
     };
     fetchGroups();
   }
-  , [navigate]);
+    , [navigate]);
 
-  const toggleSlot = (day: Date, hour_start: string, hour_end:string ) => {
+  const toggleSlot = (day: Date, hour_start: string, hour_end: string) => {
     const dateStr = format(day, 'yyyy-MM-dd');
     const exists = selectedSlots.find(slot => slot.date === dateStr && slot.hour_start === hour_start && slot.hour_end === hour_end);
     if (exists) {
@@ -77,7 +77,7 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
       description,
       ...(type === 'group' && groupId ? { groupId } : {})
     });
-    
+
     setSelectedSlots([]);
     setModalOpen(false);
   };
@@ -104,10 +104,12 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
       created_at: '',
       updated_at: ''
     });
-    
+
     setModalExtOpen(false);
   };
-  
+
+  const HOUR_HEIGHT_PX = 32; // h-8 = 2rem = 32px
+
   const groupColors: Record<number, string> = {
     1: 'bg-purple-300 dark:bg-purple-600 hover:bg-purple-400 dark:hover:bg-purple-500',
     2: 'bg-yellow-300 dark:bg-yellow-600 hover:bg-yellow-400 dark:hover:bg-yellow-500',
@@ -115,10 +117,11 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
     4: 'bg-red-300 dark:bg-red-600 hover:bg-red-400 dark:hover:bg-red-500',
     // fallback group color below
   };
-  
+
 
   return (
-    <div className="space-y-4 bg-white dark:bg-gray-900 text-black dark:text-white p-2 rounded-md">
+
+    <div className="w-screen h-screen flex flex-col bg-white dark:bg-gray-900 text-black dark:text-white p-2 overflow-hidden">
       <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
         <div className="flex gap-2">
           <button
@@ -152,71 +155,107 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
         />
       </div>
 
-      <div className="w-full overflow-x-auto">
-        <table className="w-full sm:table-fixed border-collapse border border-gray-300 dark:border-gray-700">
-          <thead>
-            <tr>
-              <th className="w-24"></th>
-              {daysOfWeek.map(day => (
-                <th key={day.toISOString()} className="text-center px-2 py-1 border border-gray-300 dark:border-gray-700">
-                  {format(day, 'EEEE')}<br />{format(day, 'MM/dd')}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {hours.map(hour => (
-              <tr key={hour}>
-                <td className="w-16 px-1 text-[10px] text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-700 text-right">{hour}</td>
-                {daysOfWeek.map(day => {
-                  const dateStr = format(day, 'yyyy-MM-dd');
-                  const selected = selectedSlots.some(slot => slot.date === dateStr && slot.hour_start === hour);
+      <div className="flex-grow overflow-x-auto">
+        <div
+          className="grid grid-cols-[64px_repeat(7,minmax(0,1fr))] border border-gray-300 dark:border-gray-700 relative box-border"
+          style={{ height: '48rem' }}
+        >
+          {/* Header row */}
+          <div></div>
+          {daysOfWeek.map(day => (
+            <div
+              key={day.toISOString()}
+              className="text-center p-1 border border-gray-300 dark:border-gray-700 text-sm font-medium"
+            >
+              {format(day, 'EEEE')}<br />{format(day, 'MM/dd')}
+            </div>
+          ))}
 
-                  const matchingEvent = eventData.find(event => {
-                    const eventDate = parseISO(event.date);
-                    const eventHour = format(parseISO(`${event.date}T${event.start_time}`), 'HH:00');
-                    return isSameDay(eventDate, day) && eventHour === hour;
-                  });
+          {/* Hour labels and time grid */}
+          {hours.map((hour) => (
+            <React.Fragment key={hour}>
+              {/* Time Label */}
+              <div className="text-[10px] text-right pr-1 pt-1 border text-gray-600 dark:text-gray-300">
+                {hour}
+              </div>
 
-                  const hasEvent = !!matchingEvent;
+              {/* Time Slots for Each Day */}
+              {daysOfWeek.map((day) => {
+                const dateStr = format(day, 'yyyy-MM-dd');
+                const hourEnd = String(parseInt(hour.split(':')[0]) + 1).padStart(2, '0') + ':00';
+                const selected = selectedSlots.some(slot =>
+                  slot.date === dateStr && slot.hour_start === hour
+                );
 
-                  const bgClass = selected
-                    ? 'bg-blue-400 dark:bg-blue-600'
-                    : hasEvent
-                      ? matchingEvent.type === 'solo'
-                        ? 'bg-green-300 dark:bg-green-600 hover:bg-green-400 dark:hover:bg-green-500'
-                        : matchingEvent.group !== null && groupColors[matchingEvent.group] 
-                          ? groupColors[matchingEvent.group]
-                          : 'bg-orange-300 dark:bg-orange-600 hover:bg-orange-400 dark:hover:bg-orange-500'
+                return (
+                  <div
+                    key={day.toISOString() + hour}
+                    onClick={() => toggleSlot(day, hour, hourEnd)}
+                    className={`h-8 border hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer
+            ${selected ? 'bg-blue-400 dark:bg-blue-600' : ''}`}
+                  >
+                    {/* You can optionally show content */}
+                  </div>
+                );
+              })}
+            </React.Fragment>
+          ))}
+          {eventData.map(event => {
+            const eventDate = parseISO(event.date);
+            const dayIndex = daysOfWeek.findIndex(day => isSameDay(eventDate, day));
+            if (dayIndex === -1) return null;
 
-                      : 'hover:bg-gray-200 dark:hover:bg-gray-700';
+            const startTimeParts = event.start_time.split(':');
+            const endTimeParts = event.end_time.split(':');
+            const startHour = parseInt(startTimeParts[0], 10);
+            const startMinute = parseInt(startTimeParts[1], 10) || 0;
+            const endHour = parseInt(endTimeParts[0], 10);
+            const endMinute = parseInt(endTimeParts[1], 10) || 0;
 
-                  return (
-                    <td
-                      key={day.toISOString() + hour}
-                      className={`h-8 cursor-pointer border border-gray-300 dark:border-gray-700 relative ${bgClass}`}
-                      onClick={() => {
-                        const start = parseInt(hour.split(':')[0], 10);
-                        const end = String(start + 1).padStart(2, '0') + ':00';
-                        toggleSlot(day, hour, end);
-                      }}
-                    >
-                      {hasEvent && (
-                        <div
-                          className="text-[10px] text-gray-800 dark:text-gray-100 truncate px-1 whitespace-nowrap overflow-hidden"
-                          title={matchingEvent.type === 'group' ? `Group ID: ${matchingEvent.group}` : ''}
-                        >
-                          {matchingEvent?.description}
-                        </div>
-                      )}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+            const startMinutes = startHour * 60 + startMinute;
+            const endMinutes = endHour * 60 + endMinute;
+            const headerOffset = 50; // Adjust based on your header height
+            const top = (startMinutes / 60) * HOUR_HEIGHT_PX + headerOffset;
+            const height = ((endMinutes - startMinutes) / 60) * HOUR_HEIGHT_PX;
+
+            console.log(`Event: ${event.description}`, {
+              date: event.date,
+              start_time: event.start_time,
+              end_time: event.end_time,
+              startMinutes,
+              endMinutes,
+              top,
+              height,
+              dayIndex,
+            });
+
+            const bgClass = event.type === 'solo'
+              ? 'bg-green-300 dark:bg-green-600 hover:bg-green-400 dark:hover:bg-green-500'
+              : event.group !== null && groupColors[event.group]
+                ? groupColors[event.group]
+                : 'bg-orange-300 dark:bg-orange-600 hover:bg-orange-400 dark:hover:bg-orange-500';
+
+            return (
+              <div
+                key={event.id}
+                className={`absolute text-xs px-1 truncate ${bgClass}`}
+                style={{
+                  left: `calc(64px + ${dayIndex} * ((100% - 64px) / 7))`,
+                  top: `${top}px`,
+                  height: `${height}px`,
+                  width: `calc((100% - 64px) / 7)`,
+                  zIndex: 10,
+                }}
+                title={event.description}
+              >
+                {event.description}
+              </div>
+            );
+          })}
+
+        </div>
       </div>
+
 
       {selectedSlots.length > 0 && (
         <button
