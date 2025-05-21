@@ -89,7 +89,7 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
     eventTimeStart: string,
     eventTimeEnd: string,
     eventLocation?: string,
-    groupId?: string
+    group?: string
   ) => {
     onExtEventCreate({
       type,
@@ -98,10 +98,9 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
       start_time: eventTimeStart,
       end_time: eventTimeEnd,
       location: eventLocation,
-      ...(type === 'group' && groupId ? { groupId } : {}),
       id: 0,
       user: null,
-      group: null,
+      group: group ? parseInt(group) : null,
       created_at: '',
       updated_at: ''
     });
@@ -135,7 +134,7 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
             Next Week
           </button>
           <button
-            onClick={() => () => setModalExtOpen(true)}
+            onClick={() => setModalExtOpen(true)}
             className="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
           >
             Add Event

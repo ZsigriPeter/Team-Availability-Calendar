@@ -158,8 +158,8 @@ class EventSubmissionView(APIView):
     def post(self, request):
         serializer = UserEventSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            events = serializer.save()
-            return Response({"message": f"{len(events)} events created."}, status=status.HTTP_201_CREATED)
+            serializer.save()
+            return Response({"message": "Event created."}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     

@@ -22,6 +22,18 @@ class UserEventSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserEvent
         fields = '__all__'
+        read_only_fields = ['user']  # prevents clients from setting it directly
+
+    def create(self, validated_data):
+        request = self.context.get('request')
+        user = request.user if request else None
+
+        # Only assign the user if it's a solo event
+        if validated_data.get('type') == 'solo':
+            validated_data['user'] = user
+
+        return super().create(validated_data)
+
 
 class GroupSerializer(serializers.ModelSerializer):
     member_count = serializers.SerializerMethodField()
