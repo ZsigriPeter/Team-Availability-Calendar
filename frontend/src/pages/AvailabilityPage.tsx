@@ -63,29 +63,29 @@ export default function AvailabilityPage() {
   };
 
   const handleExtEventSave = async (event: UserEvent) => {
-  const isEdit = !!event.id;
-  const url ="/api/submit-event/";
-  const method = isEdit ? "PUT" : "POST";
+    const isEdit = !!event.id;
+    const url = "/api/submit-event/";
+    const method = isEdit ? "PUT" : "POST";
 
-  try {
-    const response = await fetch(url, {
-      method,
-      headers: getAuthHeaders(),
-      body: JSON.stringify(event),
-    });
+    try {
+      const response = await fetch(url, {
+        method,
+        headers: getAuthHeaders(),
+        body: JSON.stringify(event),
+      });
 
-    if (!response.ok) {
-      throw new Error(isEdit ? "Failed to update event" : "Failed to create event");
+      if (!response.ok) {
+        throw new Error(isEdit ? "Failed to update event" : "Failed to create event");
+      }
+
+      console.log(isEdit ? "Event updated:" : "Event created:", response);
+
+      const updatedData = await fetchAvailability(startDate, endDate, navigate);
+      setData(updatedData);
+    } catch (error) {
+      console.error(isEdit ? "Failed to update event:" : "Failed to create event:", error);
     }
-
-    console.log(isEdit ? "Event updated:" : "Event created:", response);
-
-    const updatedData = await fetchAvailability(startDate, endDate, navigate);
-    setData(updatedData);
-  } catch (error) {
-    console.error(isEdit ? "Failed to update event:" : "Failed to create event:", error);
-  }
-};
+  };
 
 
   const handleAddToGoogleCalendar = async (event: UserEvent) => {
@@ -96,8 +96,8 @@ export default function AvailabilityPage() {
       return;
     }
 
-    const start = `${event.date}T${event.start_time}:00`;
-    const end = `${event.date}T${event.end_time}:00`;
+    const start = new Date(`${event.date}T${event.start_time}`).toISOString();
+    const end = new Date(`${event.date}T${event.end_time}`).toISOString();
 
     await fetch("/api/add-to-google-calendar/", {
       method: "POST",
