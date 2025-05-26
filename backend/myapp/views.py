@@ -14,6 +14,8 @@ from firebase_admin import auth as firebase_auth
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 
+import requests
+
 User = get_user_model()
 
 class GoogleLoginView(APIView):
@@ -31,10 +33,8 @@ class GoogleLoginView(APIView):
             if not email:
                 return Response({"detail": "Email not found in token."}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Create or get user
             user, created = User.objects.get_or_create(email=email, defaults={"username": username})
 
-            # Issue your app's JWT
             refresh = RefreshToken.for_user(user)
 
             return Response({
@@ -171,10 +171,8 @@ class UserEventListView(APIView):
         start_date = parse_date(request.GET.get('start_date'))
         end_date = parse_date(request.GET.get('end_date'))
 
-        # Get all groups where the user is a member
         user_group_ids = GroupMembership.objects.filter(user=user).values_list('group_id', flat=True)
 
-        # Filter events
         events = UserEvent.objects.filter(
             Q(type='solo', user=user) |
             Q(type='group', group_id__in=user_group_ids)
@@ -191,11 +189,43 @@ def authenticate_firebase_token(token):
         uid = decoded_token['uid']
         email = decoded_token.get('email')
 
-        # Try to find the user in your DB, or create them
         user, created = User.objects.get_or_create(email=email, defaults={"username": email})
 
-        # Return your own app's response (JWT, session, etc.)
         return user
     except Exception as e:
         print("Firebase verification failed:", str(e))
         return None
+    
+@api_view(["POST"])
+def add_to_google_calendar(request):
+    token = request.data.get("token")
+    event = request.data.get("event")
+
+    if not token or not event:
+        return Response({"error": "Missing token or event"}, status=400)
+
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+    }
+
+    event_data = {
+        "summary": event["title"],
+        "description": event["description"],
+        "start": {
+            "dateTime": event["start"],
+            "timeZone": "Europe/Budapest"
+        },
+        "end": {
+            "dateTime": event["end"],
+            "timeZone": "Europe/Budapest"
+        }
+    }
+
+    response = requests.post(
+        "https://www.googleapis.com/calendar/v3/calendars/primary/events",
+        headers=headers,
+        json=event_data
+    )
+
+    return Response(response.json(), status=response.status_code)

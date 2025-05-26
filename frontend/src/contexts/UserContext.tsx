@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { getUserData } from '../api/userData';
 import { useNavigate } from 'react-router-dom';
 import { auth, provider } from "../firebase";
-import { signInWithPopup, signOut } from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 
 interface UserContextType {
   isLoggedIn: boolean;
@@ -24,56 +24,71 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   function hasAccessToken(): boolean {
     return !!localStorage.getItem('accessToken');
   }
-  
-const loginFirebase = async () => {
-  try {
-    const result = await signInWithPopup(auth, provider);
-    const user = result.user;
-    const idToken = await user.getIdToken();
 
-    const res = await fetch("/api/google-login/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ idToken }),
-    });
+  const loginFirebase = async () => {
+    try {
+      provider.addScope("https://www.googleapis.com/auth/calendar.events");
 
-    if (!res.ok) {
-      throw new Error("Backend authentication failed");
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      const idToken = await user.getIdToken();
+
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+
+      const accessToken = credential?.accessToken;
+
+      const res = await fetch("/api/google-login/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Backend authentication failed");
+      }
+
+      const data = await res.json();
+
+      localStorage.setItem("accessToken", data.access);
+      localStorage.setItem("refreshToken", data.refresh);
+
+      if (accessToken) {
+        localStorage.setItem("googleAccessToken", accessToken);
+      }
+
+      setUserName(user.displayName || "Unknown");
+      setIsLoggedIn(true);
+    } catch (err) {
+      console.error("Google login error:", err);
     }
+  };
 
-    const data = await res.json();
 
-    localStorage.setItem("accessToken", data.access);
-    localStorage.setItem("refreshToken", data.refresh);
-    
-    setUserName(user.displayName || "Unknown");
-    setIsLoggedIn(true);
-  } catch (err) {
-    console.error("Google login error:", err);
-  }
-};
-
-const logoutFirebase = async () => {
-  await signOut(auth);
-  localStorage.removeItem('accessToken');
-  setIsLoggedIn(false);
-  setUserName('');
-  navigate('/login');
-};
+  const logoutFirebase = async () => {
+    await signOut(auth);
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('googleAccessToken');
+    setIsLoggedIn(false);
+    setUserName('');
+    navigate('/login');
+  };
 
   const login = async () => {
-  try {
-    const data = await getUserData(navigate);
-    setUserName(data.username);
-    setIsLoggedIn(true);
-  } catch (err) {
-    console.error('Failed to fetch user data:', err);
-  }
-};
+    try {
+      const data = await getUserData(navigate);
+      setUserName(data.username);
+      setIsLoggedIn(true);
+    } catch (err) {
+      console.error('Failed to fetch user data:', err);
+    }
+  };
 
   const logout = () => {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
+    localStorage.removeItem('googleAccessToken');
     setIsLoggedIn(false);
     setUserName('');
     navigate('/login');

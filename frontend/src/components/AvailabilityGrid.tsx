@@ -29,6 +29,7 @@ interface AvailabilityGridProps {
   eventData: UserEvent[];
   currentDate: Date;
   onDateChange: (date: Date) => void;
+  onAddToGoogleCalendar:(event: UserEvent) => void;
 }
 
 export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
@@ -37,6 +38,7 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
   eventData,
   currentDate,
   onDateChange,
+  onAddToGoogleCalendar,
 }) => {
   const [selectedSlots, setSelectedSlots] = useState<TimeSlot[]>([]);
   const [isModalOpen, setModalOpen] = useState(false);
@@ -89,6 +91,7 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
     eventTimeStart: string,
     eventTimeEnd: string,
     eventLocation?: string,
+    addToGoogleCalendar?: boolean,
     group?: string
   ) => {
     onExtEventCreate({
@@ -104,7 +107,21 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
       created_at: '',
       updated_at: ''
     });
-
+    if (addToGoogleCalendar) {
+      onAddToGoogleCalendar({
+        type,
+        description,
+        date: eventDate,
+        start_time: eventTimeStart,
+        end_time: eventTimeEnd,
+        location: eventLocation,
+        id: 0,
+        user: null,
+        group: group ? parseInt(group) : null,
+        created_at: '',
+        updated_at: ''
+      });
+    }
     setModalExtOpen(false);
   };
 
@@ -118,6 +135,7 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
     // fallback group color below
   };
 
+  
 
   return (
 
@@ -228,27 +246,29 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
               height,
               dayIndex,
             });
-
+            
             const bgClass = event.type === 'solo'
               ? 'bg-green-300 dark:bg-green-600 hover:bg-green-400 dark:hover:bg-green-500'
               : event.group !== null && groupColors[event.group]
                 ? groupColors[event.group]
                 : 'bg-orange-300 dark:bg-orange-600 hover:bg-orange-400 dark:hover:bg-orange-500';
-
+            const isShortEvent = (endMinutes - startMinutes) < 60;
             return (
+              
               <div
                 key={event.id}
-                className={`absolute text-xs px-1 truncate ${bgClass}`}
+                className={`absolute text-xs px-1 ${bgClass} ${isShortEvent ? 'truncate' : 'whitespace-normal overflow-hidden'}`}
                 style={{
                   left: `calc(64px + ${dayIndex} * ((100% - 64px) / 7))`,
                   top: `${top}px`,
                   height: `${height}px`,
                   width: `calc((100% - 64px) / 7)`,
                   zIndex: 10,
+                  lineHeight: '1.2',
                 }}
                 title={event.description}
               >
-                {event.description}
+                {event.description} - ({event.start_time} - {event.end_time})
               </div>
             );
           })}

@@ -8,10 +8,10 @@ import { UserEvent } from "@/interfaces";
 
 const fetchAvailability = async (startDate: string, endDate: string, navigate: NavigateFunction) => {
   const res = await fetchWithAuth(`/api/events/?start_date=${startDate}&end_date=${endDate}`, {
-      method: "GET",
-      headers: getAuthHeaders(),
-    }, navigate);
-    return res.json();
+    method: "GET",
+    headers: getAuthHeaders(),
+  }, navigate);
+  return res.json();
 };
 
 export default function AvailabilityPage() {
@@ -42,7 +42,7 @@ export default function AvailabilityPage() {
   }, [startDate, endDate, navigate]);
 
   const handleEventCreate = async (event: {
-    slots: { date: string; hour_start: string; hour_end:string }[];
+    slots: { date: string; hour_start: string; hour_end: string }[];
     type: "solo" | "group";
     description: string;
     groupId?: string;
@@ -55,7 +55,7 @@ export default function AvailabilityPage() {
       });
       if (!response.ok) throw new Error("Failed to save event");
       console.log("Event saved:", response);
-      const updatedData = await fetchAvailability( startDate, endDate, navigate);
+      const updatedData = await fetchAvailability(startDate, endDate, navigate);
       setData(updatedData);
     } catch (error) {
       console.error("Failed to create event:", error);
@@ -71,12 +71,42 @@ export default function AvailabilityPage() {
       });
       if (!response.ok) throw new Error("Failed to save event");
       console.log("Event saved:", response);
-      const updatedData = await fetchAvailability( startDate, endDate, navigate);
+      const updatedData = await fetchAvailability(startDate, endDate, navigate);
       setData(updatedData);
     } catch (error) {
       console.error("Failed to create event:", error);
     }
   };
+
+  const handleAddToGoogleCalendar = async (event: UserEvent) => {
+    const token = localStorage.getItem("googleAccessToken");
+
+    if (!token) {
+      console.error("Missing Google access token");
+      return;
+    }
+
+    const start = `${event.date}T${event.start_time}:00`;
+    const end = `${event.date}T${event.end_time}:00`;
+
+    await fetch("/api/add-to-google-calendar/", {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        token,
+        event: {
+          title: event.description,
+          description: event.description,
+          location: event.location,
+          start,
+          end,
+        },
+      }),
+    });
+  };
+
+
+
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-gray-700">
@@ -90,6 +120,7 @@ export default function AvailabilityPage() {
             eventData={data}
             currentDate={currentDate}
             onDateChange={setCurrentDate}
+            onAddToGoogleCalendar={handleAddToGoogleCalendar}
           />
         </div>
       )}

@@ -13,8 +13,17 @@ import toast from "react-hot-toast";
 
 interface EventModalProps {
   onClose: () => void;
-  onConfirm: (type: 'solo' | 'group', description: string,  
-    eventDate:string, eventTimeStart:string, eventTimeEnd:string, eventLocation:string, groupId?: string) => void;
+  onConfirm: (
+  type: 'solo' | 'group',
+  description: string,
+  eventDate: string,
+  eventTimeStart: string,
+  eventTimeEnd: string,
+  eventLocation: string,
+  addToGoogleCalendar?: boolean,
+  groupId?: string,
+) => void;
+
   groups: { id: string; name: string }[];
 }
 
@@ -26,6 +35,8 @@ export const EventModalExtended: React.FC<EventModalProps> = ({ onClose, onConfi
   const [eventTimeStart, setEventTimeStart] = useState<string>('');
   const [eventTimeEnd, setEventTimeEnd] = useState<string>('');
   const [eventLocation, setEventLocation] = useState<string>('');
+  const [addToGoogleCalendar, setAddToGoogleCalendar] = useState<boolean>(false);
+
 
   const handleConfirm = () => {
     if (type === 'group' && !selectedGroup) {
@@ -33,7 +44,8 @@ export const EventModalExtended: React.FC<EventModalProps> = ({ onClose, onConfi
       return;
     }
 
-    onConfirm(type, description, eventDate, eventTimeStart, eventTimeEnd, eventLocation, selectedGroup || undefined);
+    onConfirm(type, description, eventDate, eventTimeStart, eventTimeEnd, eventLocation, addToGoogleCalendar, selectedGroup || undefined);
+
   };
 
   return (
@@ -151,6 +163,18 @@ export const EventModalExtended: React.FC<EventModalProps> = ({ onClose, onConfi
               rows={3}
             />
           </div>
+        </div>
+        <div className="flex items-center space-x-2 mt-2">
+          <input
+            type="checkbox"
+            id="googleCalendar"
+            checked={addToGoogleCalendar}
+            onChange={(e) => setAddToGoogleCalendar(e.target.checked)}
+            className="form-checkbox h-4 w-4 text-indigo-600"
+          />
+          <label htmlFor="googleCalendar" className="text-sm text-gray-700 dark:text-gray-300">
+            Add to Google Calendar
+          </label>
         </div>
 
         <DialogFooter className="mt-6">

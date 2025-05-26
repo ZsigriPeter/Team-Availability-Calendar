@@ -22,5 +22,6 @@ urlpatterns = [
     path('submit-event/', EventSubmissionView.as_view(), name='submit-events'),
     path('events/', UserEventListView.as_view(), name='user-event-list'),
     path('google-login/', GoogleLoginView.as_view(), name='google-login'),
+    path('add-to-google-calendar/', views.add_to_google_calendar, name='google-calendar'),
     path('', include(router.urls)),
 ]
