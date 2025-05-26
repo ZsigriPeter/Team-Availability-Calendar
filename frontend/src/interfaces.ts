@@ -10,6 +10,7 @@ export interface UserEvent {
     group: number | null;
     created_at: string; // ISO datetime string
     updated_at: string; // ISO datetime string
+    google_event_id?: string; // ✅ Add this line
   }
   
 export interface Group {

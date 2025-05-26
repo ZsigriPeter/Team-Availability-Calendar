@@ -86,39 +86,40 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
     setModalOpen(false);
   };
 
-  const handleExtConfirm = (
-    type: 'solo' | 'group',
-    description: string,
-    eventDate: string,
-    eventTimeStart: string,
-    eventTimeEnd: string,
-    eventLocation?: string,
-    addToGoogleCalendar?: boolean,
-    group?: string
-  ) => {
-    const updatedEvent: UserEvent = {
-      id: editingEvent?.id ?? 0,
-      type,
-      description,
-      date: eventDate,
-      start_time: eventTimeStart,
-      end_time: eventTimeEnd,
-      location: eventLocation,
-      user: null,
-      group: group ? parseInt(group) : null,
-      created_at: '',
-      updated_at: '',
-    };
-
-    onExtEventCreate(updatedEvent);
-
-    if (addToGoogleCalendar) {
-      onAddToGoogleCalendar(updatedEvent);
-    }
-
-    setEditingEvent(null);
-    setModalExtOpen(false);
+  const handleExtConfirm = async (
+  type: 'solo' | 'group',
+  description: string,
+  eventDate: string,
+  eventTimeStart: string,
+  eventTimeEnd: string,
+  eventLocation?: string,
+  addToGoogleCalendar?: boolean,
+  group?: string
+) => {
+  const updatedEvent: UserEvent = {
+    id: editingEvent?.id ?? 0,
+    type,
+    description,
+    date: eventDate,
+    start_time: eventTimeStart,
+    end_time: eventTimeEnd,
+    location: eventLocation,
+    user: null,
+    group: group ? parseInt(group) : null,
+    created_at: '',
+    updated_at: '',
   };
+
+  const savedEvent = await onExtEventCreate(updatedEvent); // 🔁 Get event with real id
+
+  if (addToGoogleCalendar && savedEvent) {
+    await onAddToGoogleCalendar(savedEvent); // ✅ Now it has id
+  }
+
+  setEditingEvent(null);
+  setModalExtOpen(false);
+};
+
 
 
   const HOUR_HEIGHT_PX = 32; // h-8 = 2rem = 32px
@@ -232,7 +233,7 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
             const top = (startMinutes / 60) * HOUR_HEIGHT_PX + headerOffset;
             const height = ((endMinutes - startMinutes) / 60) * HOUR_HEIGHT_PX;
 
-            console.log(`Event: ${event.description}`, {
+            /*console.log(`Event: ${event.description}`, {
               date: event.date,
               start_time: event.start_time,
               end_time: event.end_time,
@@ -241,7 +242,7 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
               top,
               height,
               dayIndex,
-            });
+            });*/
 
             const bgClass = event.type === 'solo'
               ? 'bg-green-300 dark:bg-green-600 hover:bg-green-400 dark:hover:bg-green-500'

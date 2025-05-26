@@ -62,58 +62,66 @@ export default function AvailabilityPage() {
     }
   };
 
-  const handleExtEventSave = async (event: UserEvent) => {
-    const isEdit = !!event.id;
-    const url = "/api/submit-event/";
-    const method = isEdit ? "PUT" : "POST";
+  const handleExtEventSave = async (event: UserEvent): Promise<UserEvent | null> => {
+  const isEdit = !!event.id;
+  const url = "/api/submit-event/";
+  const method = isEdit ? "PUT" : "POST";
 
-    try {
-      const response = await fetch(url, {
-        method,
-        headers: getAuthHeaders(),
-        body: JSON.stringify(event),
-      });
-
-      if (!response.ok) {
-        throw new Error(isEdit ? "Failed to update event" : "Failed to create event");
-      }
-
-      console.log(isEdit ? "Event updated:" : "Event created:", response);
-
-      const updatedData = await fetchAvailability(startDate, endDate, navigate);
-      setData(updatedData);
-    } catch (error) {
-      console.error(isEdit ? "Failed to update event:" : "Failed to create event:", error);
-    }
-  };
-
-
-  const handleAddToGoogleCalendar = async (event: UserEvent) => {
-    const token = localStorage.getItem("googleAccessToken");
-
-    if (!token) {
-      console.error("Missing Google access token");
-      return;
-    }
-
-    const start = new Date(`${event.date}T${event.start_time}`).toISOString();
-    const end = new Date(`${event.date}T${event.end_time}`).toISOString();
-
-    await fetch("/api/add-to-google-calendar/", {
-      method: "POST",
+  try {
+    const response = await fetch(url, {
+      method,
       headers: getAuthHeaders(),
-      body: JSON.stringify({
-        token,
-        event: {
-          title: event.description,
-          description: event.description,
-          location: event.location,
-          start,
-          end,
-        },
-      }),
+      body: JSON.stringify(event),
     });
-  };
+
+    if (!response.ok) {
+      throw new Error(isEdit ? "Failed to update event" : "Failed to create event");
+    }
+
+    const savedEvent: UserEvent = await response.json(); // ✅ Parse the response
+
+    console.log(isEdit ? "Event updated:" : "Event created:", savedEvent);
+
+    const updatedData = await fetchAvailability(startDate, endDate, navigate);
+    setData(updatedData);
+
+    return savedEvent; // ✅ Return the created/updated event
+  } catch (error) {
+    console.error(isEdit ? "Failed to update event:" : "Failed to create event:", error);
+    return null;
+  }
+};
+
+
+
+const handleAddToGoogleCalendar = async (event: UserEvent) => {
+  const token = localStorage.getItem("googleAccessToken");
+  console.log("Event :", event);
+  if (!token) {
+    console.error("Missing Google access token");
+    return;
+  }
+
+  const start = new Date(`${event.date}T${event.start_time}`).toISOString();
+  const end = new Date(`${event.date}T${event.end_time}`).toISOString();
+
+  await fetch("/api/add-to-google-calendar/", {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({
+      token,
+      event: {
+        id: event.id,
+        title: event.description,
+        description: event.description,
+        location: event.location,
+        start,
+        end,
+        google_event_id: event.google_event_id,
+      },
+    }),
+  });
+};
 
 
 

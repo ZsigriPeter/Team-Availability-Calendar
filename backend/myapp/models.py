@@ -37,6 +37,8 @@ class UserEvent(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    google_event_id = models.CharField(max_length=256, blank=True, null=True)
+
 
     class Meta:
         ordering = ['date', 'start_time']

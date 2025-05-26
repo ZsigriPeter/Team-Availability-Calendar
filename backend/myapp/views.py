@@ -154,16 +154,18 @@ class EventSlotSubmissionView(APIView):
             return Response({"message": f"{len(events)} events created."}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+from .serializers import UserEventSerializer
+
 class EventSubmissionView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
         serializer = UserEventSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "Event created."}, status=status.HTTP_201_CREATED)
+            event = serializer.save()
+            return Response(UserEventSerializer(event).data, status=status.HTTP_201_CREATED)  # ✅ return full event
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
     def put(self, request):
         event_id = request.data.get("id")
         if not event_id:
@@ -176,9 +178,10 @@ class EventSubmissionView(APIView):
 
         serializer = UserEventSerializer(event, data=request.data, context={'request': request})
         if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "Event updated."}, status=status.HTTP_200_OK)
+            event = serializer.save()
+            return Response(UserEventSerializer(event).data, status=status.HTTP_200_OK)  # ✅ return full event
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     
     
 class UserEventListView(APIView):
@@ -214,6 +217,7 @@ def authenticate_firebase_token(token):
         print("Firebase verification failed:", str(e))
         return None
     
+    
 @api_view(["POST"])
 def add_to_google_calendar(request):
     token = request.data.get("token")
@@ -240,10 +244,33 @@ def add_to_google_calendar(request):
         }
     }
 
-    response = requests.post(
-        "https://www.googleapis.com/calendar/v3/calendars/primary/events",
-        headers=headers,
-        json=event_data
-    )
+    google_event_id = event.get("google_event_id")
+
+    if google_event_id:
+        # 🔁 Update existing Google Calendar event
+        response = requests.patch(
+            f"https://www.googleapis.com/calendar/v3/calendars/primary/events/{google_event_id}",
+            headers=headers,
+            json=event_data
+        )
+    else:
+        # ➕ Create a new event
+        response = requests.post(
+            "https://www.googleapis.com/calendar/v3/calendars/primary/events",
+            headers=headers,
+            json=event_data
+        )
+
+        if response.status_code in (200, 201):
+            google_event_id = response.json().get("id")
+            
+            # ✅ Save the Google event ID to the existing UserEvent
+            try:
+                user_event = UserEvent.objects.get(id=event.get("id"))
+                user_event.google_event_id = google_event_id
+                user_event.save()
+            except UserEvent.DoesNotExist:
+                print(f"UserEvent with id={event.get('id')} not found")
 
     return Response(response.json(), status=response.status_code)
+
