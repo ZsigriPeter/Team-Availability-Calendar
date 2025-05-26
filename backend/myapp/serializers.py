@@ -22,17 +22,38 @@ class UserEventSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserEvent
         fields = '__all__'
-        read_only_fields = ['user']  # prevents clients from setting it directly
 
     def create(self, validated_data):
         request = self.context.get('request')
-        user = request.user if request else None
+        event_type = validated_data.get('type')
 
-        # Only assign the user if it's a solo event
-        if validated_data.get('type') == 'solo':
-            validated_data['user'] = user
+        if event_type == 'solo':
+            validated_data['user'] = request.user
+            validated_data['group'] = None
+        elif event_type == 'group':
+            validated_data['group'] = validated_data.get('group')
+            validated_data['user'] = None
 
         return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        event_type = validated_data.get('type', instance.type)
+
+        if event_type == 'solo':
+            instance.user = self.context['request'].user
+            instance.group = None
+        elif event_type == 'group':
+            instance.user = None
+            instance.group = validated_data.get('group', instance.group)
+
+        instance.description = validated_data.get('description', instance.description)
+        instance.date = validated_data.get('date', instance.date)
+        instance.start_time = validated_data.get('start_time', instance.start_time)
+        instance.end_time = validated_data.get('end_time', instance.end_time)
+        instance.location = validated_data.get('location', instance.location)
+
+        instance.save()
+        return instance
 
 
 class GroupSerializer(serializers.ModelSerializer):

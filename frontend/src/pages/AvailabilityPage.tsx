@@ -62,21 +62,31 @@ export default function AvailabilityPage() {
     }
   };
 
-  const handleExtEventCreate = async (event: UserEvent) => {
-    try {
-      const response = await fetch("/api/submit-event/", {
-        method: "POST",
-        headers: getAuthHeaders(),
-        body: JSON.stringify(event),
-      });
-      if (!response.ok) throw new Error("Failed to save event");
-      console.log("Event saved:", response);
-      const updatedData = await fetchAvailability(startDate, endDate, navigate);
-      setData(updatedData);
-    } catch (error) {
-      console.error("Failed to create event:", error);
+  const handleExtEventSave = async (event: UserEvent) => {
+  const isEdit = !!event.id;
+  const url ="/api/submit-event/";
+  const method = isEdit ? "PUT" : "POST";
+
+  try {
+    const response = await fetch(url, {
+      method,
+      headers: getAuthHeaders(),
+      body: JSON.stringify(event),
+    });
+
+    if (!response.ok) {
+      throw new Error(isEdit ? "Failed to update event" : "Failed to create event");
     }
-  };
+
+    console.log(isEdit ? "Event updated:" : "Event created:", response);
+
+    const updatedData = await fetchAvailability(startDate, endDate, navigate);
+    setData(updatedData);
+  } catch (error) {
+    console.error(isEdit ? "Failed to update event:" : "Failed to create event:", error);
+  }
+};
+
 
   const handleAddToGoogleCalendar = async (event: UserEvent) => {
     const token = localStorage.getItem("googleAccessToken");
@@ -116,7 +126,7 @@ export default function AvailabilityPage() {
         <div className="p-4">
           <AvailabilityGrid
             onEventCreate={handleEventCreate}
-            onExtEventCreate={handleExtEventCreate}
+            onExtEventCreate={handleExtEventSave}
             eventData={data}
             currentDate={currentDate}
             onDateChange={setCurrentDate}

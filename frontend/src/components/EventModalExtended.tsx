@@ -1,5 +1,5 @@
 // EventModalExtended.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -10,24 +10,26 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import toast from "react-hot-toast";
+import { UserEvent } from '@/interfaces';
 
 interface EventModalProps {
   onClose: () => void;
   onConfirm: (
-  type: 'solo' | 'group',
-  description: string,
-  eventDate: string,
-  eventTimeStart: string,
-  eventTimeEnd: string,
-  eventLocation: string,
-  addToGoogleCalendar?: boolean,
-  groupId?: string,
-) => void;
-
+    type: 'solo' | 'group',
+    description: string,
+    eventDate: string,
+    eventTimeStart: string,
+    eventTimeEnd: string,
+    eventLocation: string,
+    addToGoogleCalendar?: boolean,
+    groupId?: string,
+    eventId?: number
+  ) => void;
+  initialData?: UserEvent | null;
   groups: { id: string; name: string }[];
 }
 
-export const EventModalExtended: React.FC<EventModalProps> = ({ onClose, onConfirm, groups }) => {
+export const EventModalExtended: React.FC<EventModalProps> = ({ onClose, onConfirm, groups, initialData }) => {
   const [type, setType] = useState<'solo' | 'group'>('solo');
   const [description, setDescription] = useState('');
   const [selectedGroup, setSelectedGroup] = useState<string>('');
@@ -38,13 +40,42 @@ export const EventModalExtended: React.FC<EventModalProps> = ({ onClose, onConfi
   const [addToGoogleCalendar, setAddToGoogleCalendar] = useState<boolean>(false);
 
 
+  // Inside component
+  useEffect(() => {
+    if (initialData) {
+      setType(initialData.type);
+      setDescription(initialData.description);
+      setSelectedGroup(initialData.group?.toString() ?? '');
+      setEventDate(initialData.date);
+      setEventTimeStart(initialData.start_time.slice(0, 5)); // Trim seconds if needed
+      setEventTimeEnd(initialData.end_time.slice(0, 5));
+      setEventLocation(initialData.location || '');
+      // Google Calendar isn't stored in UserEvent, so you might skip it or pass it separately
+    }
+  }, [initialData]);
+
+
+
   const handleConfirm = () => {
     if (type === 'group' && !selectedGroup) {
-      toast.success('Please select a group.');
+      toast.error('Please select a group.');
       return;
     }
 
-    onConfirm(type, description, eventDate, eventTimeStart, eventTimeEnd, eventLocation, addToGoogleCalendar, selectedGroup || undefined);
+    const formatTime = (time: string) => time.length === 5 ? `${time}:00` : time;
+
+    onConfirm(
+    type,
+    description,
+    eventDate,
+    formatTime(eventTimeStart),
+    formatTime(eventTimeEnd),
+    eventLocation,
+    addToGoogleCalendar,
+    selectedGroup || undefined,
+    initialData?.id
+  );
+
 
   };
 
@@ -102,6 +133,7 @@ export const EventModalExtended: React.FC<EventModalProps> = ({ onClose, onConfi
             </label>
             <input
               type="date"
+              value={eventDate}
               className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white p-2 rounded"
               onChange={(e) => {
                 setEventDate(e.target.value);
@@ -116,6 +148,7 @@ export const EventModalExtended: React.FC<EventModalProps> = ({ onClose, onConfi
             </label>
             <input
               type="time"
+              value={eventTimeStart}
               className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white p-2 rounded"
               onChange={(e) => {
                 setEventTimeStart(e.target.value);
@@ -130,6 +163,7 @@ export const EventModalExtended: React.FC<EventModalProps> = ({ onClose, onConfi
             </label>
             <input
               type="time"
+              value={eventTimeEnd}
               className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white p-2 rounded"
               onChange={(e) => {
                 setEventTimeEnd(e.target.value);
@@ -144,6 +178,7 @@ export const EventModalExtended: React.FC<EventModalProps> = ({ onClose, onConfi
             </label>
             <input
               type="text"
+              value={eventLocation}
               className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white p-2 rounded"
               onChange={(e) => {
                 setEventLocation(e.target.value);

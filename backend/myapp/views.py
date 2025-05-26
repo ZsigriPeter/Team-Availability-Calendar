@@ -1,3 +1,4 @@
+import json
 from django.shortcuts import render
 from rest_framework import generics, viewsets, permissions, filters,status
 from .models import UserEvent, Group, GroupMembership,User
@@ -13,6 +14,7 @@ from django.db.models import Q
 from firebase_admin import auth as firebase_auth
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.views.decorators.csrf import csrf_exempt
 
 import requests
 
@@ -160,6 +162,22 @@ class EventSubmissionView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response({"message": "Event created."}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def put(self, request):
+        event_id = request.data.get("id")
+        if not event_id:
+            return Response({"error": "Missing 'id' for update."}, status=status.HTTP_400_BAD_REQUEST)
+
+        event = get_object_or_404(UserEvent, id=event_id)
+
+        if event.user and event.user != request.user:
+            return Response({"error": "You don't have permission to edit this event."}, status=status.HTTP_403_FORBIDDEN)
+
+        serializer = UserEventSerializer(event, data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Event updated."}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     

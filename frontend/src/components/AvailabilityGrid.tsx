@@ -29,7 +29,7 @@ interface AvailabilityGridProps {
   eventData: UserEvent[];
   currentDate: Date;
   onDateChange: (date: Date) => void;
-  onAddToGoogleCalendar:(event: UserEvent) => void;
+  onAddToGoogleCalendar: (event: UserEvent) => void;
 }
 
 export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
@@ -44,6 +44,8 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
   const [isModalOpen, setModalOpen] = useState(false);
   const [isModalExtOpen, setModalExtOpen] = useState(false);
   const [myGroups, setMyGroups] = useState<{ id: string; name: string }[]>([]);
+  const [editingEvent, setEditingEvent] = useState<UserEvent | null>(null);
+
   const navigate = useNavigate();
 
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
@@ -94,36 +96,30 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
     addToGoogleCalendar?: boolean,
     group?: string
   ) => {
-    onExtEventCreate({
+    const updatedEvent: UserEvent = {
+      id: editingEvent?.id ?? 0,
       type,
       description,
       date: eventDate,
       start_time: eventTimeStart,
       end_time: eventTimeEnd,
       location: eventLocation,
-      id: 0,
       user: null,
       group: group ? parseInt(group) : null,
       created_at: '',
-      updated_at: ''
-    });
+      updated_at: '',
+    };
+
+    onExtEventCreate(updatedEvent);
+
     if (addToGoogleCalendar) {
-      onAddToGoogleCalendar({
-        type,
-        description,
-        date: eventDate,
-        start_time: eventTimeStart,
-        end_time: eventTimeEnd,
-        location: eventLocation,
-        id: 0,
-        user: null,
-        group: group ? parseInt(group) : null,
-        created_at: '',
-        updated_at: ''
-      });
+      onAddToGoogleCalendar(updatedEvent);
     }
+
+    setEditingEvent(null);
     setModalExtOpen(false);
   };
+
 
   const HOUR_HEIGHT_PX = 32; // h-8 = 2rem = 32px
 
@@ -135,7 +131,7 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
     // fallback group color below
   };
 
-  
+
 
   return (
 
@@ -232,7 +228,7 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
 
             const startMinutes = startHour * 60 + startMinute;
             const endMinutes = endHour * 60 + endMinute;
-            const headerOffset = 50; // Adjust based on your header height
+            const headerOffset = 50;
             const top = (startMinutes / 60) * HOUR_HEIGHT_PX + headerOffset;
             const height = ((endMinutes - startMinutes) / 60) * HOUR_HEIGHT_PX;
 
@@ -246,7 +242,7 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
               height,
               dayIndex,
             });
-            
+
             const bgClass = event.type === 'solo'
               ? 'bg-green-300 dark:bg-green-600 hover:bg-green-400 dark:hover:bg-green-500'
               : event.group !== null && groupColors[event.group]
@@ -254,10 +250,17 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
                 : 'bg-orange-300 dark:bg-orange-600 hover:bg-orange-400 dark:hover:bg-orange-500';
             const isShortEvent = (endMinutes - startMinutes) < 60;
             return (
-              
+
               <div
                 key={event.id}
-                className={`absolute text-xs px-1 ${bgClass} ${isShortEvent ? 'truncate' : 'whitespace-normal overflow-hidden'}`}
+                className={`
+    absolute text-xs px-1 py-0.5
+    ${bgClass}
+    ${isShortEvent ? 'truncate' : 'whitespace-normal overflow-hidden'}
+    text-black dark:text-white
+    rounded-md border border-black/10 dark:border-white/10
+    hover:brightness-105 transition
+  `}
                 style={{
                   left: `calc(64px + ${dayIndex} * ((100% - 64px) / 7))`,
                   top: `${top}px`,
@@ -266,10 +269,21 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
                   zIndex: 10,
                   lineHeight: '1.2',
                 }}
+                onClick={() => {
+                  setEditingEvent(event);
+                  setModalExtOpen(true);
+                }}
                 title={event.description}
               >
-                {event.description} - ({event.start_time} - {event.end_time})
+                {event.description}
+                <br />
+                {event.location && <span className="text-[0.65rem] opacity-80">{event.location}</span>}
+                <br />
+                <span className="text-[0.7rem] font-light">
+                  ({event.start_time.substring(0, 5)} - {event.end_time.substring(0, 5)})
+                </span>
               </div>
+
             );
           })}
 
@@ -295,9 +309,13 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
       )}
       {isModalExtOpen && (
         <EventModalExtended
-          onClose={() => setModalExtOpen(false)}
+          onClose={() => {
+            setModalExtOpen(false);
+            setEditingEvent(null);
+          }}
           onConfirm={handleExtConfirm}
           groups={myGroups}
+          initialData={editingEvent}
         />
       )}
     </div>
