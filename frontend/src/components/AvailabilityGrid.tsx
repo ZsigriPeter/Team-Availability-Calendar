@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { EventModal } from './EventModal';
 import { UserEvent } from '@/interfaces';
 import {
   format,
@@ -15,16 +14,12 @@ import { TimeSlot } from '@/interfaces';
 
 import { getMyGroups } from '@/api/groups';
 import { EventModalExtended } from './EventModalExtended';
+import { ViewEventModal } from './ViewEventModal';
 
 const hours = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00`);
 
 interface AvailabilityGridProps {
-  onEventCreate: (event: {
-    slots: TimeSlot[];
-    type: 'solo' | 'group';
-    description: string;
-    groupId?: string;
-  }) => void;
+  onEventDelete: (id: number) => void;
   onExtEventCreate: (event: UserEvent) => void;
   eventData: UserEvent[];
   currentDate: Date;
@@ -33,7 +28,7 @@ interface AvailabilityGridProps {
 }
 
 export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
-  onEventCreate,
+  onEventDelete,
   onExtEventCreate,
   eventData,
   currentDate,
@@ -41,10 +36,11 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
   onAddToGoogleCalendar,
 }) => {
   const [selectedSlots, setSelectedSlots] = useState<TimeSlot[]>([]);
-  const [isModalOpen, setModalOpen] = useState(false);
   const [isModalExtOpen, setModalExtOpen] = useState(false);
   const [myGroups, setMyGroups] = useState<{ id: string; name: string }[]>([]);
   const [editingEvent, setEditingEvent] = useState<UserEvent | null>(null);
+  const [viewingEvent, setViewingEvent] = useState<UserEvent | null>(null);
+
 
   const navigate = useNavigate();
 
@@ -70,55 +66,39 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
     }
   };
 
-  const handleConfirm = (
+  const handleExtConfirm = async (
     type: 'solo' | 'group',
     description: string,
-    groupId?: string
+    eventDate: string,
+    eventTimeStart: string,
+    eventTimeEnd: string,
+    eventLocation?: string,
+    addToGoogleCalendar?: boolean,
+    group?: string
   ) => {
-    onEventCreate({
-      slots: selectedSlots,
+    const updatedEvent: UserEvent = {
+      id: editingEvent?.id ?? 0,
       type,
       description,
-      ...(type === 'group' && groupId ? { groupId } : {})
-    });
+      date: eventDate,
+      start_time: eventTimeStart,
+      end_time: eventTimeEnd,
+      location: eventLocation,
+      user: null,
+      group: group ? parseInt(group) : null,
+      created_at: '',
+      updated_at: '',
+    };
 
-    setSelectedSlots([]);
-    setModalOpen(false);
+    const savedEvent = await onExtEventCreate(updatedEvent);
+
+    if (addToGoogleCalendar && savedEvent) {
+      await onAddToGoogleCalendar(savedEvent);
+    }
+
+    setEditingEvent(null);
+    setModalExtOpen(false);
   };
-
-  const handleExtConfirm = async (
-  type: 'solo' | 'group',
-  description: string,
-  eventDate: string,
-  eventTimeStart: string,
-  eventTimeEnd: string,
-  eventLocation?: string,
-  addToGoogleCalendar?: boolean,
-  group?: string
-) => {
-  const updatedEvent: UserEvent = {
-    id: editingEvent?.id ?? 0,
-    type,
-    description,
-    date: eventDate,
-    start_time: eventTimeStart,
-    end_time: eventTimeEnd,
-    location: eventLocation,
-    user: null,
-    group: group ? parseInt(group) : null,
-    created_at: '',
-    updated_at: '',
-  };
-
-  const savedEvent = await onExtEventCreate(updatedEvent); // 🔁 Get event with real id
-
-  if (addToGoogleCalendar && savedEvent) {
-    await onAddToGoogleCalendar(savedEvent); // ✅ Now it has id
-  }
-
-  setEditingEvent(null);
-  setModalExtOpen(false);
-};
 
 
 
@@ -270,10 +250,7 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
                   zIndex: 10,
                   lineHeight: '1.2',
                 }}
-                onClick={() => {
-                  setEditingEvent(event);
-                  setModalExtOpen(true);
-                }}
+                onClick={() => setViewingEvent(event)}
                 title={event.description}
               >
                 {event.description}
@@ -291,23 +268,6 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
         </div>
       </div>
 
-
-      {selectedSlots.length > 0 && (
-        <button
-          onClick={() => setModalOpen(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Create Event
-        </button>
-      )}
-
-      {isModalOpen && (
-        <EventModal
-          onClose={() => setModalOpen(false)}
-          onConfirm={handleConfirm}
-          groups={myGroups}
-        />
-      )}
       {isModalExtOpen && (
         <EventModalExtended
           onClose={() => {
@@ -317,6 +277,22 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
           onConfirm={handleExtConfirm}
           groups={myGroups}
           initialData={editingEvent}
+        />
+      )}
+
+      {viewingEvent && (
+        <ViewEventModal
+          event={viewingEvent}
+          onClose={() => setViewingEvent(null)}
+          onEdit={() => {
+            setEditingEvent(viewingEvent);
+            setViewingEvent(null);
+            setModalExtOpen(true);
+          }}
+          onDelete={() => {
+            onEventDelete(viewingEvent.id);
+            setViewingEvent(null);
+          }}
         />
       )}
     </div>

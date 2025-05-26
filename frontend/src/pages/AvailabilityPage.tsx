@@ -41,27 +41,6 @@ export default function AvailabilityPage() {
     fetchData();
   }, [startDate, endDate, navigate]);
 
-  const handleEventCreate = async (event: {
-    slots: { date: string; hour_start: string; hour_end: string }[];
-    type: "solo" | "group";
-    description: string;
-    groupId?: string;
-  }) => {
-    try {
-      const response = await fetch("/api/submit-events/", {
-        method: "POST",
-        headers: getAuthHeaders(),
-        body: JSON.stringify(event),
-      });
-      if (!response.ok) throw new Error("Failed to save event");
-      console.log("Event saved:", response);
-      const updatedData = await fetchAvailability(startDate, endDate, navigate);
-      setData(updatedData);
-    } catch (error) {
-      console.error("Failed to create event:", error);
-    }
-  };
-
   const handleExtEventSave = async (event: UserEvent): Promise<UserEvent | null> => {
   const isEdit = !!event.id;
   const url = "/api/submit-event/";
@@ -92,7 +71,26 @@ export default function AvailabilityPage() {
   }
 };
 
+const handleDeleteEvent = async (id: number) => {
+  try {
+    const response = await fetch("/api/submit-event/", {
+      method: "DELETE",
+      headers: {
+        ...getAuthHeaders(),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ id }),
+    });
 
+    if (!response.ok) throw new Error("Failed to delete event");
+
+    console.log("Event deleted");
+    const updatedData = await fetchAvailability(startDate, endDate, navigate);
+    setData(updatedData);
+  } catch (error) {
+    console.error("Error deleting event:", error);
+  }
+};
 
 const handleAddToGoogleCalendar = async (event: UserEvent) => {
   const token = localStorage.getItem("googleAccessToken");
@@ -123,9 +121,6 @@ const handleAddToGoogleCalendar = async (event: UserEvent) => {
   });
 };
 
-
-
-
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-gray-700">
       {loading ? (
@@ -133,7 +128,7 @@ const handleAddToGoogleCalendar = async (event: UserEvent) => {
       ) : (
         <div className="p-4">
           <AvailabilityGrid
-            onEventCreate={handleEventCreate}
+            onEventDelete={handleDeleteEvent}
             onExtEventCreate={handleExtEventSave}
             eventData={data}
             currentDate={currentDate}

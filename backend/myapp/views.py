@@ -181,7 +181,19 @@ class EventSubmissionView(APIView):
             event = serializer.save()
             return Response(UserEventSerializer(event).data, status=status.HTTP_200_OK)  # ✅ return full event
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self, request):
+        event_id = request.data.get("id")
+        if not event_id:
+            return Response({"error": "Missing 'id' for delete."}, status=status.HTTP_400_BAD_REQUEST)
 
+        event = get_object_or_404(UserEvent, id=event_id)
+
+        if event.user and event.user != request.user:
+            return Response({"error": "You don't have permission to delete this event."}, status=status.HTTP_403_FORBIDDEN)
+
+        event.delete()
+        return Response({"message": "Event deleted."}, status=status.HTTP_204_NO_CONTENT)
     
     
 class UserEventListView(APIView):
