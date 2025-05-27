@@ -39,22 +39,17 @@ export const EventModalExtended: React.FC<EventModalProps> = ({ onClose, onConfi
   const [eventLocation, setEventLocation] = useState<string>('');
   const [addToGoogleCalendar, setAddToGoogleCalendar] = useState<boolean>(false);
 
-
-  // Inside component
   useEffect(() => {
     if (initialData) {
       setType(initialData.type);
       setDescription(initialData.description);
       setSelectedGroup(initialData.group?.toString() ?? '');
       setEventDate(initialData.date);
-      setEventTimeStart(initialData.start_time.slice(0, 5)); // Trim seconds if needed
+      setEventTimeStart(initialData.start_time.slice(0, 5));
       setEventTimeEnd(initialData.end_time.slice(0, 5));
       setEventLocation(initialData.location || '');
-      // Google Calendar isn't stored in UserEvent, so you might skip it or pass it separately
     }
   }, [initialData]);
-
-
 
   const handleConfirm = () => {
     if (type === 'group' && !selectedGroup) {
@@ -65,18 +60,16 @@ export const EventModalExtended: React.FC<EventModalProps> = ({ onClose, onConfi
     const formatTime = (time: string) => time.length === 5 ? `${time}:00` : time;
 
     onConfirm(
-    type,
-    description,
-    eventDate,
-    formatTime(eventTimeStart),
-    formatTime(eventTimeEnd),
-    eventLocation,
-    addToGoogleCalendar,
-    selectedGroup || undefined,
-    initialData?.id
-  );
-
-
+      type,
+      description,
+      eventDate,
+      formatTime(eventTimeStart),
+      formatTime(eventTimeEnd),
+      eventLocation,
+      addToGoogleCalendar,
+      selectedGroup || undefined,
+      initialData?.id
+    );
   };
 
   return (

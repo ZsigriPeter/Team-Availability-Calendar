@@ -7,7 +7,6 @@ interface GroupCardProps {
   actionLabel?: string;
 }
 
-  
 export default function GroupCard({ id, name, memberCount, onAction, actionLabel }: GroupCardProps) {
   return (
     <div className="p-4 border rounded-xl shadow-md flex justify-between items-center dark:bg-gray-800">

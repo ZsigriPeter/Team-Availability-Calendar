@@ -102,14 +102,13 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
     setModalExtOpen(false);
   };
 
-  const HOUR_HEIGHT_PX = 32; // h-8 = 2rem = 32px
+  const HOUR_HEIGHT_PX = 32;
 
   const groupColors: Record<number, string> = {
     1: 'bg-purple-300 dark:bg-purple-600 hover:bg-purple-400 dark:hover:bg-purple-500',
     2: 'bg-yellow-300 dark:bg-yellow-600 hover:bg-yellow-400 dark:hover:bg-yellow-500',
     3: 'bg-pink-300 dark:bg-pink-600 hover:bg-pink-400 dark:hover:bg-pink-500',
     4: 'bg-red-300 dark:bg-red-600 hover:bg-red-400 dark:hover:bg-red-500',
-    // fallback group color below
   };
 
   return (

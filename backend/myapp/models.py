@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
+
 class Group(models.Model):
     name = models.CharField(max_length=100)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
@@ -10,14 +11,30 @@ class Group(models.Model):
 
     def __str__(self):
         return self.name
-
+        
 class GroupMembership(models.Model):
+    ROLE_CHOICES = [
+        ('owner', 'Owner'),
+        ('admin', 'Admin'),
+        ('member', 'Member'),
+    ]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='members')
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='member')
     joined_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ('user', 'group')
+
+    def __str__(self):
+        return f"{self.user.username} in {self.group.name} as {self.get_role_display()}"
+    
+    def can_modify_events(self):
+        return self.role in ['admin', 'owner']
+
+    def can_delete_events(self):
+        return self.role == 'owner'
 
 class UserEvent(models.Model):
     TYPE_CHOICES = [
@@ -51,3 +68,11 @@ class UserEvent(models.Model):
 
     def __str__(self):
         return f"{self.get_type_display()} on {self.date} at {self.start_time}"
+    
+    def user_can_edit(self, user):
+        if self.type == 'solo':
+            return self.user == user
+        if self.type == 'group' and self.group:
+            membership = GroupMembership.objects.filter(user=user, group=self.group).first()
+            return membership and membership.can_modify_events()
+        return False

@@ -8,7 +8,6 @@ interface Props {
       <h2 className="text-xl font-semibold mb-2">User Information</h2>
       <p><strong>Username:</strong> {user.username}</p>
       <p><strong>Email:</strong> {user.email}</p>
-      {/* Add more fields if needed */}
     </div>
   );
 };
