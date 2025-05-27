@@ -88,7 +88,9 @@ class GroupViewSet(viewsets.ModelViewSet):
         return Group.objects.exclude(id__in=user_groups)
 
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+        group = serializer.save(owner=self.request.user)
+        GroupMembership.objects.create(user=self.request.user, group=group, role='owner')
+
 
 
 class GroupMembershipViewSet(viewsets.ModelViewSet):
@@ -301,13 +303,12 @@ def delete_from_google_calendar(request):
     )
 
     if response.status_code == 204:
-        # Also remove the event ID from your DB if needed
         try:
             user_event = UserEvent.objects.get(google_event_id=google_event_id)
             user_event.google_event_id = None
             user_event.save()
         except UserEvent.DoesNotExist:
-            pass  # Optional: log or handle
+            pass
 
         return Response({"message": "Deleted from Google Calendar"}, status=204)
     else:
