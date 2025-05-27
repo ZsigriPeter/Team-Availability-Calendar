@@ -23,5 +23,6 @@ urlpatterns = [
     path('events/', UserEventListView.as_view(), name='user-event-list'),
     path('google-login/', GoogleLoginView.as_view(), name='google-login'),
     path('add-to-google-calendar/', views.add_to_google_calendar, name='google-calendar'),
+    path('delete-google-calendar/', views.delete_from_google_calendar, name='google-calendar-delete'),
     path('', include(router.urls)),
 ]

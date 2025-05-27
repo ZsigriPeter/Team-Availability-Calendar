@@ -163,7 +163,7 @@ class EventSubmissionView(APIView):
         serializer = UserEventSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             event = serializer.save()
-            return Response(UserEventSerializer(event).data, status=status.HTTP_201_CREATED)  # ✅ return full event
+            return Response(UserEventSerializer(event).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request):
@@ -179,7 +179,7 @@ class EventSubmissionView(APIView):
         serializer = UserEventSerializer(event, data=request.data, context={'request': request})
         if serializer.is_valid():
             event = serializer.save()
-            return Response(UserEventSerializer(event).data, status=status.HTTP_200_OK)  # ✅ return full event
+            return Response(UserEventSerializer(event).data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request):
@@ -259,14 +259,12 @@ def add_to_google_calendar(request):
     google_event_id = event.get("google_event_id")
 
     if google_event_id:
-        # 🔁 Update existing Google Calendar event
         response = requests.patch(
             f"https://www.googleapis.com/calendar/v3/calendars/primary/events/{google_event_id}",
             headers=headers,
             json=event_data
         )
     else:
-        # ➕ Create a new event
         response = requests.post(
             "https://www.googleapis.com/calendar/v3/calendars/primary/events",
             headers=headers,
@@ -276,7 +274,6 @@ def add_to_google_calendar(request):
         if response.status_code in (200, 201):
             google_event_id = response.json().get("id")
             
-            # ✅ Save the Google event ID to the existing UserEvent
             try:
                 user_event = UserEvent.objects.get(id=event.get("id"))
                 user_event.google_event_id = google_event_id
@@ -285,4 +282,35 @@ def add_to_google_calendar(request):
                 print(f"UserEvent with id={event.get('id')} not found")
 
     return Response(response.json(), status=response.status_code)
+
+@api_view(["POST"])
+def delete_from_google_calendar(request):
+    token = request.data.get("token")
+    google_event_id = request.data.get("google_event_id")
+
+    if not token or not google_event_id:
+        return Response({"error": "Missing token or google_event_id"}, status=400)
+
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+
+    response = requests.delete(
+        f"https://www.googleapis.com/calendar/v3/calendars/primary/events/{google_event_id}",
+        headers=headers
+    )
+
+    if response.status_code == 204:
+        # Also remove the event ID from your DB if needed
+        try:
+            user_event = UserEvent.objects.get(google_event_id=google_event_id)
+            user_event.google_event_id = None
+            user_event.save()
+        except UserEvent.DoesNotExist:
+            pass  # Optional: log or handle
+
+        return Response({"message": "Deleted from Google Calendar"}, status=204)
+    else:
+        return Response(response.json(), status=response.status_code)
+
 

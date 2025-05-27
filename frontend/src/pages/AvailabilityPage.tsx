@@ -42,36 +42,57 @@ export default function AvailabilityPage() {
   }, [startDate, endDate, navigate]);
 
   const handleExtEventSave = async (event: UserEvent): Promise<UserEvent | null> => {
-  const isEdit = !!event.id;
-  const url = "/api/submit-event/";
-  const method = isEdit ? "PUT" : "POST";
+    const isEdit = !!event.id;
+    const url = "/api/submit-event/";
+    const method = isEdit ? "PUT" : "POST";
 
-  try {
-    const response = await fetch(url, {
-      method,
-      headers: getAuthHeaders(),
-      body: JSON.stringify(event),
-    });
+    try {
+      const response = await fetch(url, {
+        method,
+        headers: getAuthHeaders(),
+        body: JSON.stringify(event),
+      });
 
-    if (!response.ok) {
-      throw new Error(isEdit ? "Failed to update event" : "Failed to create event");
+      if (!response.ok) {
+        throw new Error(isEdit ? "Failed to update event" : "Failed to create event");
+      }
+
+      const savedEvent: UserEvent = await response.json();
+
+      console.log(isEdit ? "Event updated:" : "Event created:", savedEvent);
+
+      const updatedData = await fetchAvailability(startDate, endDate, navigate);
+      setData(updatedData);
+
+      return savedEvent;
+    } catch (error) {
+      console.error(isEdit ? "Failed to update event:" : "Failed to create event:", error);
+      return null;
     }
+  };
 
-    const savedEvent: UserEvent = await response.json(); // ✅ Parse the response
+  const handleDeleteEventGoogleCalendar = async (google_event_id: string) => {
+    try {
+      const response = await fetch("/api/delete-google-calendar/", {
+        method: "POST",
+        headers: {
+          ...getAuthHeaders(),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token: localStorage.getItem("googleAccessToken"), google_event_id }),
+      });
 
-    console.log(isEdit ? "Event updated:" : "Event created:", savedEvent);
+      if (!response.ok) throw new Error("Failed to delete event");
 
-    const updatedData = await fetchAvailability(startDate, endDate, navigate);
-    setData(updatedData);
+      console.log("Event deleted");
+      const updatedData = await fetchAvailability(startDate, endDate, navigate);
+      setData(updatedData);
+    } catch (error) {
+      console.error("Error deleting event:", error);
+    }
+  };
 
-    return savedEvent; // ✅ Return the created/updated event
-  } catch (error) {
-    console.error(isEdit ? "Failed to update event:" : "Failed to create event:", error);
-    return null;
-  }
-};
-
-const handleDeleteEvent = async (id: number) => {
+  const handleDeleteEvent = async (id: number) => {
   try {
     const response = await fetch("/api/submit-event/", {
       method: "DELETE",
@@ -92,34 +113,34 @@ const handleDeleteEvent = async (id: number) => {
   }
 };
 
-const handleAddToGoogleCalendar = async (event: UserEvent) => {
-  const token = localStorage.getItem("googleAccessToken");
-  console.log("Event :", event);
-  if (!token) {
-    console.error("Missing Google access token");
-    return;
-  }
+  const handleAddToGoogleCalendar = async (event: UserEvent) => {
+    const token = localStorage.getItem("googleAccessToken");
+    console.log("Event :", event);
+    if (!token) {
+      console.error("Missing Google access token");
+      return;
+    }
 
-  const start = new Date(`${event.date}T${event.start_time}`).toISOString();
-  const end = new Date(`${event.date}T${event.end_time}`).toISOString();
+    const start = new Date(`${event.date}T${event.start_time}`).toISOString();
+    const end = new Date(`${event.date}T${event.end_time}`).toISOString();
 
-  await fetch("/api/add-to-google-calendar/", {
-    method: "POST",
-    headers: getAuthHeaders(),
-    body: JSON.stringify({
-      token,
-      event: {
-        id: event.id,
-        title: event.description,
-        description: event.description,
-        location: event.location,
-        start,
-        end,
-        google_event_id: event.google_event_id,
-      },
-    }),
-  });
-};
+    await fetch("/api/add-to-google-calendar/", {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        token,
+        event: {
+          id: event.id,
+          title: event.description,
+          description: event.description,
+          location: event.location,
+          start,
+          end,
+          google_event_id: event.google_event_id,
+        },
+      }),
+    });
+  };
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-gray-700">
@@ -128,6 +149,7 @@ const handleAddToGoogleCalendar = async (event: UserEvent) => {
       ) : (
         <div className="p-4">
           <AvailabilityGrid
+            onEventDeleteGoogleCalendar={handleDeleteEventGoogleCalendar}
             onEventDelete={handleDeleteEvent}
             onExtEventCreate={handleExtEventSave}
             eventData={data}

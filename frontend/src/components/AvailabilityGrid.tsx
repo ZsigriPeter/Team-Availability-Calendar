@@ -19,6 +19,7 @@ import { ViewEventModal } from './ViewEventModal';
 const hours = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00`);
 
 interface AvailabilityGridProps {
+  onEventDeleteGoogleCalendar: (google_event_id: string) => void;
   onEventDelete: (id: number) => void;
   onExtEventCreate: (event: UserEvent) => void;
   eventData: UserEvent[];
@@ -28,6 +29,7 @@ interface AvailabilityGridProps {
 }
 
 export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
+  onEventDeleteGoogleCalendar,
   onEventDelete,
   onExtEventCreate,
   eventData,
@@ -100,8 +102,6 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
     setModalExtOpen(false);
   };
 
-
-
   const HOUR_HEIGHT_PX = 32; // h-8 = 2rem = 32px
 
   const groupColors: Record<number, string> = {
@@ -111,8 +111,6 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
     4: 'bg-red-300 dark:bg-red-600 hover:bg-red-400 dark:hover:bg-red-500',
     // fallback group color below
   };
-
-
 
   return (
 
@@ -290,6 +288,8 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
             setModalExtOpen(true);
           }}
           onDelete={() => {
+            console.log("Deleting event:", viewingEvent);
+            onEventDeleteGoogleCalendar(viewingEvent.google_event_id || '');
             onEventDelete(viewingEvent.id);
             setViewingEvent(null);
           }}
