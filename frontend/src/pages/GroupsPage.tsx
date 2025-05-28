@@ -16,17 +16,20 @@ export default function GroupsPage() {
   const [userId, setUserId] = useState<number | undefined>(undefined);
 
   useEffect(() => {
-    fetchMyGroups();
-    const fetchUserData = async () => {
-      try {
-        const userData = await getUserData(navigate);
-        setUserId(userData.id);
-      } catch (error) {
-        console.error("Failed to fetch user data:", error);
-      }
-    };
-    fetchUserData();
-  }, [navigate]);
+  const fetchEverything = async () => {
+    try {
+      const userData = await getUserData(navigate);
+      setUserId(userData.id);
+      const data = await getMyGroups(navigate);
+      setMyGroups(data);
+    } catch (error) {
+      console.error("Failed to fetch data:", error);
+    }
+  };
+
+  fetchEverything();
+}, [navigate]);
+
 
   const fetchMyGroups = async (): Promise<void> => {
     const data: Group[] = await getMyGroups(navigate);
@@ -41,35 +44,37 @@ export default function GroupsPage() {
   const handleJoin = async (id: number) => {
     await joinGroup(id, navigate);
     toast.success("Joined group!");
-    fetchMyGroups();
+    await fetchMyGroups();
   };
 
   const handleLeave = async (id: number) => {
     await leaveGroup(id, navigate);
     toast.success("Left group!");
-    fetchMyGroups();
+    await fetchMyGroups();
   };
 
   const handleCreate = async (name: string) => {
     await createGroup(name, navigate);
     toast.success("Group created!");
-    fetchMyGroups();
+    await fetchMyGroups();
   };
 
-  const handleDelete = async (groupId: number) => {
-    await deleteGroup(groupId, navigate);
-    toast.success("Group Deleted!");
-    fetchMyGroups();
-  };
+const handleDelete = async (groupId: number) => {
+  await deleteGroup(groupId, navigate);
+  toast.success("Group Deleted!");
+  await fetchMyGroups();
+};
 
   const handleGetRoleOfUserInGroup = async (groupId: number) => {
-    if (userId === undefined) {
-      return null;
-    }
+  if (!userId) return null;
+  try {
     const data = await getRoleOfUserInGroup(groupId, userId, navigate);
     return data.role;
-  };
-
+  } catch (e) {
+    console.error("Failed to fetch role:", e);
+    return null;
+  }
+};
 
   return (
     <div className="flex justify-center bg-gray-100 dark:bg-gray-700 min-h-screen py-8">

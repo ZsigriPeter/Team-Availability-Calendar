@@ -57,12 +57,17 @@ export default function GroupCard({
           </button>
           {onDelete && (
             <button
-              onClick={() => onDelete(id)}
+              onClick={() => {
+                if (confirm("Are you sure you want to delete this group?")) {
+                  onDelete(id);
+                }
+              }}
               className="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700"
             >
               Delete
             </button>
           )}
+
         </div>
       ) : (
         onAction && (

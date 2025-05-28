@@ -55,7 +55,7 @@ export async function deleteGroup(groupId: number, navigate: NavigateFunction) {
       method: "DELETE",
       headers: getAuthHeaders(),
       },navigate);
-    return res.json();
+    if (res.status === 204) return null;
   } catch (error) {
     console.error("Error deleting group:", error);
     throw error;
