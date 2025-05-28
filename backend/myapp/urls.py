@@ -24,5 +24,6 @@ urlpatterns = [
     path('google-login/', GoogleLoginView.as_view(), name='google-login'),
     path('add-to-google-calendar/', views.add_to_google_calendar, name='google-calendar'),
     path('delete-google-calendar/', views.delete_from_google_calendar, name='google-calendar-delete'),
+    path('group-role/', get_user_group_role, name='get_user_group_role'),
     path('', include(router.urls)),
 ]

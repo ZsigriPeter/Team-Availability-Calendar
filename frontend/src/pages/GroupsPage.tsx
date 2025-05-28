@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { searchGroups, joinGroup, createGroup, getMyGroups, leaveGroup } from "@/api/groups";
+import { searchGroups, joinGroup, createGroup, getMyGroups, leaveGroup, getRoleOfUserInGroup } from "@/api/groups";
 import GroupCard from "@/components/GroupCard";
 import GroupForm from "@/components/GroupForm";
 import { useNavigate } from "react-router-dom";
 import { Group } from "@/interfaces";
 import toast from "react-hot-toast";
+import { getUserData } from "@/api/userData";
 
 export default function GroupsPage() {
   const navigate = useNavigate();
@@ -12,9 +13,20 @@ export default function GroupsPage() {
   const [searchResults, setSearchResults] = useState<Group[]>([]);
   const [myGroups, setMyGroups] = useState<Group[]>([]);
 
+  const [userId, setUserId] = useState<number | undefined>(undefined);
+
   useEffect(() => {
     fetchMyGroups();
-  }, []);
+    const fetchUserData = async () => {
+      try {
+        const userData = await getUserData(navigate);
+        setUserId(userData.id);
+      } catch (error) {
+        console.error("Failed to fetch user data:", error);
+      }
+    };
+    fetchUserData();
+  }, [navigate]);
 
   const fetchMyGroups = async (): Promise<void> => {
     const data: Group[] = await getMyGroups(navigate);
@@ -44,6 +56,15 @@ export default function GroupsPage() {
     fetchMyGroups();
   };
 
+  const handleGetRoleOfUserInGroup = async (groupId: number) => {
+    if (userId === undefined) {
+      return null;
+    }
+    const data = await getRoleOfUserInGroup(groupId, userId, navigate);
+    return data.role;
+  };
+
+
   return (
     <div className="flex justify-center bg-gray-100 dark:bg-gray-700 min-h-screen py-8">
       <div className="p-8 space-y-8 w-full max-w-2xl">
@@ -51,7 +72,7 @@ export default function GroupsPage() {
           <h2 className="text-2xl mb-2">Your Groups</h2>
           <div className="space-y-2">
             {myGroups.map((group) => (
-              <GroupCard key={group.id} id={group.id} name={group.name} actionLabel="Leave" onAction={handleLeave} memberCount={group.member_count} />
+              <GroupCard key={group.id} id={group.id} name={group.name} actionLabel="Leave" onAction={handleLeave} memberCount={group.member_count} getRole={handleGetRoleOfUserInGroup} />
             ))}
           </div>
         </section>

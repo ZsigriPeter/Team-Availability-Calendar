@@ -40,3 +40,11 @@ export async function getMyGroups(navigate: NavigateFunction) {
   }, navigate);
   return res.json();
 }
+
+export async function getRoleOfUserInGroup(groupId: number, userId: number, navigate: NavigateFunction) {
+  const res = await fetchWithAuth(`/api/group-role/?group_id=${groupId}&user_id=${userId}`, {
+    method: "GET",
+    headers: getAuthHeaders(),
+  }, navigate);
+  return res.json();
+}

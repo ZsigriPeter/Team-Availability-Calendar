@@ -8,6 +8,7 @@ import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 interface UserContextType {
   isLoggedIn: boolean;
   userName: string;
+  userId?: number;
   login: () => Promise<void>;
   logout: () => void;
   loginFirebase: () => Promise<void>;
@@ -20,6 +21,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => hasAccessToken());
   const [userName, setUserName] = useState<string>('');
+  const [userId, setUserId] = useState<number | undefined>(undefined);
 
   function hasAccessToken(): boolean {
     return !!localStorage.getItem('accessToken');
@@ -72,6 +74,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('googleAccessToken');
     setIsLoggedIn(false);
     setUserName('');
+    setUserId(undefined);
     navigate('/login');
   };
 
@@ -79,6 +82,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const data = await getUserData(navigate);
       setUserName(data.username);
+      setUserId(data.id);
       setIsLoggedIn(true);
     } catch (err) {
       console.error('Failed to fetch user data:', err);
@@ -91,6 +95,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('googleAccessToken');
     setIsLoggedIn(false);
     setUserName('');
+    setUserId(undefined);
     navigate('/login');
   };
 
@@ -101,7 +106,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   return (
-    <UserContext.Provider value={{ isLoggedIn, userName, login, logout, loginFirebase, logoutFirebase }}>
+    <UserContext.Provider value={{ isLoggedIn, userName, userId, login, logout, loginFirebase, logoutFirebase }}>
       {children}
     </UserContext.Provider>
   );

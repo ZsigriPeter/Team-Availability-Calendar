@@ -315,3 +315,19 @@ def delete_from_google_calendar(request):
         return Response(response.json(), status=response.status_code)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_group_role(request):
+    group_id = request.query_params.get('group_id')
+    user_id = request.query_params.get('user_id')
+
+    if not group_id or not user_id:
+        return Response({"error": "Missing group_id or user_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        membership = GroupMembership.objects.get(group_id=group_id, user_id=user_id)
+        return Response({"role": membership.role}, status=status.HTTP_200_OK)
+    except GroupMembership.DoesNotExist:
+        return Response({"error": "User is not a member of this group"}, status=status.HTTP_404_NOT_FOUND)
+
+
