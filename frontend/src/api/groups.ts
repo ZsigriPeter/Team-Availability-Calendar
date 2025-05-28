@@ -48,3 +48,17 @@ export async function getRoleOfUserInGroup(groupId: number, userId: number, navi
   }, navigate);
   return res.json();
 }
+
+export async function deleteGroup(groupId: number, navigate: NavigateFunction) {
+  try {
+    const res = await fetchWithAuth(`/api/groups/${groupId}/delete/`, {
+      method: "DELETE",
+      headers: getAuthHeaders(),
+      },navigate);
+    return res.json();
+  } catch (error) {
+    console.error("Error deleting group:", error);
+    throw error;
+  }
+}
+

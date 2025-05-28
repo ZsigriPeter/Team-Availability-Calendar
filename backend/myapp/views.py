@@ -331,3 +331,19 @@ def get_user_group_role(request):
         return Response({"error": "User is not a member of this group"}, status=status.HTTP_404_NOT_FOUND)
 
 
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_group(request, group_id):
+    try:
+        group = Group.objects.get(id=group_id)
+
+        if group.owner != request.user:
+            return Response({"error": "Permission denied"}, status=403)
+
+        group.delete()
+        return Response({"success": "Group deleted"}, status=204)
+
+    except Group.DoesNotExist:
+        return Response({"error": "Group not found"}, status=404)
+
+

@@ -6,6 +6,7 @@ interface GroupCardProps {
   memberCount: number;
   onAction?: (id: number) => void;
   actionLabel?: string;
+  onDelete?: (id: number) => void;
   getRole?: (groupId: number) => Promise<string>;
 }
 
@@ -15,6 +16,7 @@ export default function GroupCard({
   memberCount,
   onAction,
   actionLabel,
+  onDelete,
   getRole,
 }: GroupCardProps) {
   const [role, setRole] = useState<string | null>(null);
@@ -29,11 +31,6 @@ export default function GroupCard({
 
     fetchRole();
   }, [getRole, id]);
-
-  const handleDelete = () => {
-    console.log(`Delete group ${id}`);
-    // TODO: Call deleteGroup API and handle response
-  };
 
   const handleManageRoles = () => {
     console.log(`Manage roles for group ${id}`);
@@ -58,12 +55,14 @@ export default function GroupCard({
           >
             Manage Roles
           </button>
-          <button
-            onClick={handleDelete}
-            className="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700"
-          >
-            Delete Group
-          </button>
+          {onDelete && (
+            <button
+              onClick={() => onDelete(id)}
+              className="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700"
+            >
+              Delete
+            </button>
+          )}
         </div>
       ) : (
         onAction && (

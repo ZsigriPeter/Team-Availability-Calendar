@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { searchGroups, joinGroup, createGroup, getMyGroups, leaveGroup, getRoleOfUserInGroup } from "@/api/groups";
+import { searchGroups, joinGroup, createGroup, getMyGroups, leaveGroup, getRoleOfUserInGroup, deleteGroup } from "@/api/groups";
 import GroupCard from "@/components/GroupCard";
 import GroupForm from "@/components/GroupForm";
 import { useNavigate } from "react-router-dom";
@@ -56,6 +56,12 @@ export default function GroupsPage() {
     fetchMyGroups();
   };
 
+  const handleDelete = async (groupId: number) => {
+    await deleteGroup(groupId, navigate);
+    toast.success("Group Deleted!");
+    fetchMyGroups();
+  };
+
   const handleGetRoleOfUserInGroup = async (groupId: number) => {
     if (userId === undefined) {
       return null;
@@ -72,7 +78,7 @@ export default function GroupsPage() {
           <h2 className="text-2xl mb-2">Your Groups</h2>
           <div className="space-y-2">
             {myGroups.map((group) => (
-              <GroupCard key={group.id} id={group.id} name={group.name} actionLabel="Leave" onAction={handleLeave} memberCount={group.member_count} getRole={handleGetRoleOfUserInGroup} />
+              <GroupCard key={group.id} id={group.id} name={group.name} actionLabel="Leave" onAction={handleLeave} memberCount={group.member_count} getRole={handleGetRoleOfUserInGroup} onDelete={handleDelete} />
             ))}
           </div>
         </section>
