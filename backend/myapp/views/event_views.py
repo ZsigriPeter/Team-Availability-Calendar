@@ -51,8 +51,21 @@ class EventSubmissionView(APIView):
     def post(self, request):
         serializer = UserEventSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            event = serializer.save()
+            event_type = serializer.validated_data.get('type')
+            group = serializer.validated_data.get('group')
+
+            if event_type == 'group':
+                if not group:
+                    return Response({"error": "Group event must have a group."}, status=status.HTTP_400_BAD_REQUEST)
+
+                membership = GroupMembership.objects.filter(user=request.user, group=group).first()
+                if not membership or not membership.can_create_events():
+                    return Response({"error": "You don't have permission to create group events."},
+                                    status=status.HTTP_403_FORBIDDEN)
+
+            event = serializer.save(user=request.user)
             return Response(UserEventSerializer(event).data, status=status.HTTP_201_CREATED)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request):
@@ -62,15 +75,22 @@ class EventSubmissionView(APIView):
 
         event = get_object_or_404(UserEvent, id=event_id)
 
-        if event.user and event.user != request.user:
-            return Response({"error": "You don't have permission to edit this event."}, status=status.HTTP_403_FORBIDDEN)
+        if event.type == 'solo':
+            if event.user != request.user:
+                return Response({"error": "You don't have permission to edit this solo event."},
+                                status=status.HTTP_403_FORBIDDEN)
+        elif event.type == 'group':
+            membership = GroupMembership.objects.filter(user=request.user, group=event.group).first()
+            if not membership or not membership.can_modify_events():
+                return Response({"error": "You don't have permission to edit this group event."},
+                                status=status.HTTP_403_FORBIDDEN)
 
         serializer = UserEventSerializer(event, data=request.data, context={'request': request})
         if serializer.is_valid():
-            event = serializer.save()
-            return Response(UserEventSerializer(event).data, status=status.HTTP_200_OK)
+            updated_event = serializer.save()
+            return Response(UserEventSerializer(updated_event).data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
     def delete(self, request):
         event_id = request.data.get("id")
         if not event_id:
@@ -78,11 +98,19 @@ class EventSubmissionView(APIView):
 
         event = get_object_or_404(UserEvent, id=event_id)
 
-        if event.user and event.user != request.user:
-            return Response({"error": "You don't have permission to delete this event."}, status=status.HTTP_403_FORBIDDEN)
+        if event.type == 'solo':
+            if event.user != request.user:
+                return Response({"error": "You don't have permission to delete this solo event."},
+                                status=status.HTTP_403_FORBIDDEN)
+        elif event.type == 'group':
+            membership = GroupMembership.objects.filter(user=request.user, group=event.group).first()
+            if not membership or not membership.can_delete_events():
+                return Response({"error": "Only group owners can delete this group event."},
+                                status=status.HTTP_403_FORBIDDEN)
 
         event.delete()
         return Response({"message": "Event deleted."}, status=status.HTTP_204_NO_CONTENT)
+
 
 class UserEventListView(APIView):
     permission_classes = [IsAuthenticated]

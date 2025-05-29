@@ -32,6 +32,9 @@ class GroupMembership(models.Model):
     
     def can_modify_events(self):
         return self.role in ['admin', 'owner']
+    
+    def can_create_events(self):
+        return self.role in ['admin', 'owner']
 
     def can_delete_events(self):
         return self.role == 'owner'
