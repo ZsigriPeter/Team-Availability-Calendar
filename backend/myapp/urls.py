@@ -14,6 +14,7 @@ urlpatterns = [
     path('groups/<int:group_id>/join/', views.join_group, name='join-group'),
     path('groups/<int:group_id>/leave/', views.leave_group, name='leave-group'),
     path('groups/<int:group_id>/delete/', views.delete_group, name='delete-group'),
+    path('groups/<int:group_id>/members/', views.get_group_members, name='get_group_members'),
     path('user-data/', views.UserDataView.as_view(), name='user-data'),
     path('groups/my-groups/', views.my_groups, name='my-groups'),
     path('submit-events/', views.EventSlotSubmissionView.as_view(), name='submit-events'),

@@ -54,7 +54,7 @@ export async function deleteGroup(groupId: number, navigate: NavigateFunction) {
     const res = await fetchWithAuth(`/api/groups/${groupId}/delete/`, {
       method: "DELETE",
       headers: getAuthHeaders(),
-      },navigate);
+    }, navigate);
     if (res.status === 204) return null;
   } catch (error) {
     console.error("Error deleting group:", error);
@@ -62,3 +62,10 @@ export async function deleteGroup(groupId: number, navigate: NavigateFunction) {
   }
 }
 
+export async function fetchMembers(groupId: number, navigate: NavigateFunction) {
+  const res = await fetchWithAuth(`/api/groups/${groupId}/members/`, {
+    method: "GET",
+    headers: getAuthHeaders(),
+  }, navigate);
+  return res.json();
+};

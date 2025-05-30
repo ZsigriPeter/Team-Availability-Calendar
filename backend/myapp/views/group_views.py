@@ -82,6 +82,23 @@ def get_user_group_role(request):
         return Response({"error": "User is not a member of this group"}, status=status.HTTP_404_NOT_FOUND)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_group_members(request, group_id):
+    group = get_object_or_404(Group, id=group_id)
+
+    memberships = GroupMembership.objects.filter(group=group).select_related('user')
+    serialized_members = [
+        {
+            "id": membership.user.id,
+            "username": membership.user.username,
+            "role": membership.role
+        }
+        for membership in memberships
+    ]
+    return Response(serialized_members, status=status.HTTP_200_OK)
+
+
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_group(request, group_id):

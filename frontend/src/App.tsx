@@ -10,6 +10,7 @@ import { ProfilePage } from '@/pages/ProfilePage';
 import { Navbar } from './components/Navbar';
 import { Toaster } from 'react-hot-toast';
 import { UserProvider } from './contexts/UserContext';
+import ManageRolesPage from './pages/ManageRolesPage';
 
 function App() {
   const [darkMode, setDarkMode] = useState<boolean>(() => {
@@ -43,6 +44,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/group" element={<GroupsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/groups/:groupId/manage-roles" element={<ManageRolesPage />} />
         </Routes>
         </UserProvider>
     </Router></div>

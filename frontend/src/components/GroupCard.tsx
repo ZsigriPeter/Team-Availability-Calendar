@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface GroupCardProps {
   id: number;
@@ -20,6 +21,7 @@ export default function GroupCard({
   getRole,
 }: GroupCardProps) {
   const [role, setRole] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchRole = async () => {
@@ -33,8 +35,7 @@ export default function GroupCard({
   }, [getRole, id]);
 
   const handleManageRoles = () => {
-    console.log(`Manage roles for group ${id}`);
-    // TODO: Navigate to role management page/modal
+    navigate(`/groups/${id}/manage-roles`);
   };
 
   return (
