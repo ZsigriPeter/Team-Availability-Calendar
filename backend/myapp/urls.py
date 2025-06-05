@@ -24,5 +24,6 @@ urlpatterns = [
     path('add-to-google-calendar/', views.add_to_google_calendar, name='google-calendar'),
     path('delete-google-calendar/', views.delete_from_google_calendar, name='google-calendar-delete'),
     path('group-role/', views.get_user_group_role, name='get_user_group_role'),
+    path('events/<int:event_id>/respond/', views.respond_to_event, name='respond-to-event'),
     path('', include(router.urls)),
 ]

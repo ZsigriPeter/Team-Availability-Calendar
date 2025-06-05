@@ -53,7 +53,11 @@ class UserEvent(models.Model):
     location = models.CharField(max_length=200, blank=True)
     
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
-    group = models.ForeignKey(Group, null=True, blank=True, on_delete=models.SET_NULL)
+    group = models.ForeignKey(
+        Group,
+        on_delete=models.CASCADE,
+        related_name="events"
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -79,3 +83,21 @@ class UserEvent(models.Model):
             membership = GroupMembership.objects.filter(user=user, group=self.group).first()
             return membership and membership.can_modify_events()
         return False
+
+class EventParticipation(models.Model):
+    RESPONSE_CHOICES = [
+        ('yes', 'Yes'),
+        ('no', 'No'),
+        ('maybe', 'Maybe'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    event = models.ForeignKey(UserEvent, on_delete=models.CASCADE, related_name='participations')
+    response = models.CharField(max_length=10, choices=RESPONSE_CHOICES, default='maybe')
+    responded_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'event')
+
+    def __str__(self):
+        return f"{self.user.username} - {self.event} → {self.get_response_display()}"

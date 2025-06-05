@@ -18,9 +18,11 @@ def add_to_google_calendar(request):
         "Content-Type": "application/json",
     }
 
+    # Base event data
     event_data = {
         "summary": event["title"],
         "description": event["description"],
+        "location": event.get("location", ""),
         "start": {
             "dateTime": event["start"],
             "timeZone": "Europe/Budapest"
@@ -28,8 +30,23 @@ def add_to_google_calendar(request):
         "end": {
             "dateTime": event["end"],
             "timeZone": "Europe/Budapest"
-        }
+        },
+        "attendees": []
     }
+
+    # Add group members as attendees if this is a group event
+    user_event_id = event.get("id")
+    if user_event_id:
+        try:
+            user_event = UserEvent.objects.select_related("group").get(id=user_event_id)
+            group = user_event.group
+            if group:
+                from myapp.models import GroupMembership  # adjust import if needed
+                memberships = GroupMembership.objects.filter(group=group).select_related("user")
+                attendees = [{"email": member.user.email} for member in memberships if member.user.email]
+                event_data["attendees"] = attendees
+        except UserEvent.DoesNotExist:
+            print(f"UserEvent with id={user_event_id} not found")
 
     google_event_id = event.get("google_event_id")
 
@@ -48,15 +65,16 @@ def add_to_google_calendar(request):
 
         if response.status_code in (200, 201):
             google_event_id = response.json().get("id")
-            
+
             try:
-                user_event = UserEvent.objects.get(id=event.get("id"))
+                user_event = UserEvent.objects.get(id=user_event_id)
                 user_event.google_event_id = google_event_id
                 user_event.save()
             except UserEvent.DoesNotExist:
-                print(f"UserEvent with id={event.get('id')} not found")
+                print(f"UserEvent with id={user_event_id} not found")
 
     return Response(response.json(), status=response.status_code)
+
 
 
 @api_view(["POST"])

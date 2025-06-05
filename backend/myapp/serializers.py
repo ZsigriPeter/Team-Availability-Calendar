@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import UserEvent, Group, GroupMembership
+from .models import UserEvent, Group, GroupMembership, EventParticipation
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
@@ -100,3 +100,10 @@ class EventSubmissionSerializer(serializers.Serializer):
             )
             created_events.append(event)
         return created_events
+
+
+class EventParticipationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EventParticipation
+        fields = ['user', 'event', 'response', 'responded_at']
+        read_only_fields = ['responded_at']
