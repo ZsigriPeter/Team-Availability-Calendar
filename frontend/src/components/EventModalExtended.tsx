@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import toast from "react-hot-toast";
 import { UserEvent } from '@/interfaces';
 
+
 interface EventModalProps {
   onClose: () => void;
   onConfirm: (
@@ -38,6 +39,7 @@ export const EventModalExtended: React.FC<EventModalProps> = ({ onClose, onConfi
   const [eventTimeEnd, setEventTimeEnd] = useState<string>('');
   const [eventLocation, setEventLocation] = useState<string>('');
   const [addToGoogleCalendar, setAddToGoogleCalendar] = useState<boolean>(false);
+
 
   useEffect(() => {
     if (initialData) {

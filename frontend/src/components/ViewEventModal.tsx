@@ -1,6 +1,11 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Trash2, Pencil } from 'lucide-react';
 import { UserEvent } from '@/interfaces';
+import { useEffect, useState } from 'react';
+import { getRoleOfUserInGroup } from '@/api/groups';
+import { getUserData } from '@/api/userData';
+import { useNavigate } from "react-router-dom";
+import toast from 'react-hot-toast';
 
 type ViewEventModalProps = {
     event: UserEvent | null;
@@ -9,7 +14,41 @@ type ViewEventModalProps = {
     onDelete: () => void;
 };
 
+
+
 export const ViewEventModal: React.FC<ViewEventModalProps> = ({ event, onClose, onEdit, onDelete }) => {
+    const navigate = useNavigate();
+    const [myRole, setMyRole] = useState<'admin' | 'member' | 'owner' | null>(null);
+
+    useEffect(() => {
+        if (!event) return;
+
+        const groupId = event.group;
+        if (groupId !== null && groupId !== undefined) {
+            getUserData(navigate)
+                .then(userData => {
+                    if (!userData) {
+                        toast.error('Failed to fetch user data.');
+                        onClose();
+                        return;
+                    }
+                    return getRoleOfUserInGroup(groupId, userData.id, navigate);
+                })
+                .then(role => {
+                    if (role) {
+                        setMyRole(role.role);
+                    } else {
+                        toast.error('Failed to fetch group role.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching group role:', error);
+                    toast.error('Failed to fetch group role.');
+                });
+        } else{
+            setMyRole('owner');
+        }
+    }, [event, onClose]);
     if (!event) return null;
 
     return (
@@ -19,18 +58,21 @@ export const ViewEventModal: React.FC<ViewEventModalProps> = ({ event, onClose, 
                     <DialogHeader className="flex items-center">
                         <DialogTitle className="text-gray-900 dark:text-white">Event Details</DialogTitle>
                         <div className="flex ml-auto pr-2 space-x-2">
-                            <button
-                                onClick={onEdit}
-                                className="p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
-                            >
-                                <Pencil className="h-5 w-5" />
-                            </button>
+                            {myRole === "admin" || myRole === "owner" && (
+                                <button
+                                    onClick={onEdit}
+                                    className="p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
+                                >
+                                    <Pencil className="h-5 w-5" />
+                                </button>
+                            )}
+                            {myRole === "admin" || myRole === "owner" && (
                             <button
                                 onClick={onDelete}
                                 className="p-2 text-red-600 hover:text-red-700 dark:hover:text-red-500"
                             >
                                 <Trash2 className="h-5 w-5" />
-                            </button>
+                            </button>)}
                         </div>
 
 

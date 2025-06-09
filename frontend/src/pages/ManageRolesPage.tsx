@@ -70,14 +70,16 @@ export default function ManageRolesPage() {
                         <select
                             value={member.role}
                             onChange={(e) => updateRole(member.id, e.target.value)}
-                            className="border px-3 py-1 rounded-md dark:bg-gray-700 dark:text-white"
+                            disabled={member.role === "owner"}
+                            className="border px-3 py-1 rounded-md dark:bg-gray-700 dark:text-white disabled:opacity-50"
                         >
                             <option value="member">Member</option>
                             <option value="admin">Admin</option>
-                            <option value="owner">Owner</option>
+                            {member.role === "owner" && <option value="owner">Owner</option>}
                         </select>
                     </div>
                 ))}
+
             </div>
         </div>
     );

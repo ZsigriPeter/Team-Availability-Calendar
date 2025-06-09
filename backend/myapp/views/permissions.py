@@ -23,3 +23,4 @@ class CanDeleteGroupEvent(permissions.BasePermission):
             membership = GroupMembership.objects.filter(user=request.user, group=obj.group).first()
             return membership and membership.can_delete_events()
         return False
+    
