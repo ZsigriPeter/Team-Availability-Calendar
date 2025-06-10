@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { fetchMembers } from "@/api/groups";
+import { fetchMembers, updateRoleOfUserInGroup, removeUserFromGroup } from "@/api/groups";
+import toast from "react-hot-toast";
+import { Trash2 } from "lucide-react";
 
 interface Member {
     id: number;
@@ -36,21 +38,31 @@ export default function ManageRolesPage() {
 
     const updateRole = async (memberId: number, newRole: string) => {
         try {
-            const res = await fetch(`/api/groups/${groupId}/members/${memberId}/role`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ role: newRole }),
-            });
+            const { ok, data } = await updateRoleOfUserInGroup(parseInt(groupId || "0"), memberId, navigate, newRole);
 
-            if (!res.ok) throw new Error("Failed to update role");
+            if (!ok) throw new Error("Failed to update role");
 
             setMembers((prev) =>
                 prev.map((m) => (m.id === memberId ? { ...m, role: newRole } : m))
             );
+            toast.success(data.detail || "Role updated.");
         } catch (err) {
             console.error(err);
+            toast.error("Failed to update role.");
         }
     };
+
+    const removeUser = async (memberId: number) => {
+        try {
+            await removeUserFromGroup(parseInt(groupId || "0"), memberId, navigate);
+            toast.success("User removed from group.");
+            setMembers((prev) => prev.filter((m) => m.id !== memberId));
+        } catch (error) {
+            console.error("Failed to remove user:", error);
+            toast.error("Failed to remove user.");
+        }
+    };
+
 
     if (loading) return <div>Loading...</div>;
 
@@ -77,6 +89,20 @@ export default function ManageRolesPage() {
                             <option value="admin">Admin</option>
                             {member.role === "owner" && <option value="owner">Owner</option>}
                         </select>
+                        {member.role !== "owner" && (
+                            <button
+                                onClick={() => {
+                                    if (confirm(`Remove ${member.username} from the group?`)) {
+                                        removeUser(member.id);
+                                    }
+                                }}
+                                className="p-1 rounded-md text-red-600 hover:bg-red-100 dark:hover:bg-red-800"
+                                aria-label={`Remove ${member.username}`}
+                                title={`Remove ${member.username}`}
+                            >
+                                <Trash2 className="w-4 h-4" />
+                            </button>
+                        )}
                     </div>
                 ))}
 

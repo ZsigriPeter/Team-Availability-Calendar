@@ -56,6 +56,33 @@ def leave_group(request, group_id):
 
     return Response({"detail": "Left group successfully."}, status=status.HTTP_200_OK)
 
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def remove_user_from_group(request, group_id, user_id):
+    requester = request.user
+    group = get_object_or_404(Group, id=group_id)
+
+    try:
+        requester_membership = GroupMembership.objects.get(user=requester, group=group)
+    except GroupMembership.DoesNotExist:
+        return Response({"detail": "You are not a member of this group."}, status=status.HTTP_403_FORBIDDEN)
+
+    if requester_membership.role != 'owner':
+        return Response({"detail": "Only the group owner can remove users."}, status=status.HTTP_403_FORBIDDEN)
+
+    if requester.id == user_id:
+        return Response({"detail": "Owner cannot remove themselves."}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        target_membership = GroupMembership.objects.get(user_id=user_id, group=group)
+    except GroupMembership.DoesNotExist:
+        return Response({"detail": "Target user is not a member of this group."}, status=status.HTTP_404_NOT_FOUND)
+
+    target_membership.delete()
+    return Response({"detail": "User removed from group."}, status=status.HTTP_200_OK)
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def my_groups(request):
@@ -113,4 +140,36 @@ def delete_group(request, group_id):
 
     except Group.DoesNotExist:
         return Response({"error": "Group not found"}, status=404)
+    
+    
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_user_role_in_group(request, group_id, user_id):
+    requester = request.user
+    group = get_object_or_404(Group, id=group_id)
+
+    try:
+        requester_membership = GroupMembership.objects.get(user=requester, group=group)
+        if requester_membership.role != 'owner':
+            return Response({"detail": "Only the group owner can update roles."}, status=status.HTTP_403_FORBIDDEN)
+    except GroupMembership.DoesNotExist:
+        return Response({"detail": "You are not a member of this group."}, status=status.HTTP_403_FORBIDDEN)
+
+    if requester.id == user_id:
+        return Response({"detail": "Group owner cannot change their own role."}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        membership = GroupMembership.objects.get(user_id=user_id, group=group)
+    except GroupMembership.DoesNotExist:
+        return Response({"detail": "User is not a member of this group."}, status=status.HTTP_404_NOT_FOUND)
+
+    new_role = request.data.get("role")
+    if new_role not in ["member", "admin"]:
+        return Response({"detail": "Invalid role."}, status=status.HTTP_400_BAD_REQUEST)
+
+    membership.role = new_role
+    membership.save()
+
+    return Response({"detail": f"Role updated to {new_role}."}, status=status.HTTP_200_OK)
+
 
