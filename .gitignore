@@ -1,5 +1,3 @@
-firebase_key.json
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -19,4 +17,3 @@ env*/
 
 # macOS
 .DS_Store
-

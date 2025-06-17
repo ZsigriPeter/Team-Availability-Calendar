@@ -1,3 +1,7 @@
 django
 psycopg2-binary
 django-cors-headers
+firebase-admin
+certifi
+python-decouple
+djangorestframework-simplejwt
