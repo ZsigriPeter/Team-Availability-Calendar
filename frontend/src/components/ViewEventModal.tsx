@@ -37,6 +37,7 @@ export const ViewEventModal: React.FC<ViewEventModalProps> = ({ event, onClose, 
                 .then(role => {
                     if (role) {
                         setMyRole(role.role);
+                        console.log("User role in group:", role.role);
                     } else {
                         toast.error('Failed to fetch group role.');
                     }
@@ -45,7 +46,7 @@ export const ViewEventModal: React.FC<ViewEventModalProps> = ({ event, onClose, 
                     console.error('Error fetching group role:', error);
                     toast.error('Failed to fetch group role.');
                 });
-        } else{
+        } else {
             setMyRole('owner');
         }
     }, [event, onClose]);
@@ -58,7 +59,7 @@ export const ViewEventModal: React.FC<ViewEventModalProps> = ({ event, onClose, 
                     <DialogHeader className="flex items-center">
                         <DialogTitle className="text-gray-900 dark:text-white">Event Details</DialogTitle>
                         <div className="flex ml-auto pr-2 space-x-2">
-                            {myRole === "admin" || myRole === "owner" && (
+                            {(myRole === "admin" || myRole === "owner") && (
                                 <button
                                     onClick={onEdit}
                                     className="p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
@@ -66,13 +67,13 @@ export const ViewEventModal: React.FC<ViewEventModalProps> = ({ event, onClose, 
                                     <Pencil className="h-5 w-5" />
                                 </button>
                             )}
-                            {myRole === "admin" || myRole === "owner" && (
-                            <button
-                                onClick={onDelete}
-                                className="p-2 text-red-600 hover:text-red-700 dark:hover:text-red-500"
-                            >
-                                <Trash2 className="h-5 w-5" />
-                            </button>)}
+                            {(myRole === "admin" || myRole === "owner") && (
+                                <button
+                                    onClick={onDelete}
+                                    className="p-2 text-red-600 hover:text-red-700 dark:hover:text-red-500"
+                                >
+                                    <Trash2 className="h-5 w-5" />
+                                </button>)}
                         </div>
 
 
@@ -91,13 +92,13 @@ export const ViewEventModal: React.FC<ViewEventModalProps> = ({ event, onClose, 
 
                     {/* Group */}
                     {/*event.group && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Group
-              </label>
-              <p className="text-gray-900 dark:text-white">{event.group.name}</p>
-            </div>
-          )*/}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Group
+                            </label>
+                            <p className="text-gray-900 dark:text-white">{event.group.name}</p>
+                        </div>
+                    )*/}
 
                     {/* Date */}
                     <div>

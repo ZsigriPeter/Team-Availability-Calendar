@@ -1,80 +1,102 @@
 # Team-Availability-Calendar
-A web application that allows teams to track and manage their availability for meetings, shifts, or collaborative work. It provides an intuitive interface where team members can indicate their available time slots, view team-wide availability, and suggest meeting times based on shared free slots.
+A web application that allows groups to track and manage their events for different activities. It provides an intuitive interface where group members can indicate their available for events.
 
 Key Features:
 1. User Authentication & Profiles
-Sign up/login with Django authentication.
 
-User profiles with names, roles, and working hours.
+![img.png](screenshots/img1.JPG)
 
-2. Availability Scheduling
-Users can set their available hours for each day of the week.
+2. Group Management 
 
-Options for marking time slots as Busy, Available, or Preferred.
+Users can create, join groups.
 
-Recurring availability (e.g., "I’m always free on Tuesdays from 10-12 AM").
+![img.png](screenshots/img2.JPG)
 
-Ability to override specific dates (e.g., "I'm on vacation next Friday").
 
 3. Team Calendar View
-Displays a consolidated view of all team members’ availability.
 
-Color-coded slots: Green (available), Yellow (preferred), Red (busy).
+Users can create group events if they have the role for it.
 
-Search and filter by team members or departments.
+![img.png](screenshots/img5.JPG)
 
-4. Smart Meeting Suggestions
-The system suggests optimal meeting times based on team members’ availability.
+View details of existing events or edit them.
 
-Options to set meeting duration (e.g., "Find a 1-hour slot with at least 3 members").
+![img.png](screenshots/img6.JPG)
 
-Sends invitations to confirm proposed meeting slots.
+![img.png](screenshots/img7.JPG)
 
-5. Notifications & Reminders
-Email or in-app notifications for meeting requests.
+4. Events can be added to Google Calendar
 
-Reminders before meetings.
-
-Alerts when a meeting slot is modified or canceled.
+5. Event Create, Edit, Delete for group events send email notification for the group members
 
 6. Integration with External Calendars
-Sync availability with Google Calendar, Outlook, or Apple Calendar.
-
-Two-way syncing: updates in the app reflect in external calendars and vice versa.
+Sync availability with Google Calendar.
 
 7. Admin & Role Management
 Admins can manage team members, approve schedule changes, and set meeting policies.
 
-Different roles: Member (sets availability), Manager (suggests meetings), Admin (manages settings).
+![img.png](screenshots/img3.JPG)
 
-8. Responsive UI with TypeScript & React
-Calendar grid interface with drag-and-drop to adjust availability.
+Different roles: Member (sets availability), Manager (suggests meetings), Admin (manages settings).
 
 Dark mode support.
 
 Mobile-friendly design.
 
-9. PostgreSQL Database Structure
-Users Table: Stores user details and roles.
+## Technologies
+- [![React]][React-url] [![Vite]][Vite-url] [![JavaScript]][JavaScript-url] [![TypeScript]][TypeScript-url]
+- [![CSS]][CSS-url]
+- [![Django]][Django-url] [![DRF]][DRF-url]
+- [![JWT]][JWT-url]
+- [![Postgres]][Postgres-url]
+- [![Git]][Git-url]
 
-Availability Table: Tracks each user's available slots.
 
-Meetings Table: Stores scheduled meetings with participants.
+### Installation
+To set up the project locally:
+- Clone to local machine
+- .env example file has sample data that has to be modified and saved as .env, and a firebase_key.json has to be included in the same directory.
+  - Navigate to root directory
+  - `pip install -r requirements.txt`
+  - `venv\Scripts\Activate.ps1`
+  - `cd .\backend\`
+  - `python manage.py runserver `
+  - Open new cmd
+  - Navigate to root directory
+  - `cd .\frontend\`
+  - `npm run dev`
+  - Open link in browser
 
-10. Future Enhancements (Stretch Goals)
-AI-based availability prediction (suggest times based on past behavior).
 
-Time zone adjustments for remote teams.
+[Postgres]: https://img.shields.io/badge/Postgres-%23316192.svg?logo=postgresql&logoColor=white
+[Postgres-url]: https://www.postgresql.org/
 
-Public sharing links for external scheduling.
+[Docker]: https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=fff
+[Docker-url]: https://www.docker.com/
 
-Tech Stack
-Backend: Django + Django REST Framework (API)
+[React]: https://img.shields.io/badge/React-%2320232a.svg?logo=react&logoColor=%2361DAFB
+[React-url]: https://react.dev/
 
-Frontend: React + TypeScript
+[Vite]: https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=fff
+[Vite-url]: https://vite.dev/guide/
 
-Database: PostgreSQL
+[CSS]: https://img.shields.io/badge/CSS-1572B6?logo=css3&logoColor=fff
+[CSS-url]: https://en.wikipedia.org/wiki/CSS
 
-Authentication: Django Auth + JWT
+[JavaScript]: https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=000
+[JavaScript-url]: https://en.wikipedia.org/wiki/JavaScript
 
-Calendar Integration: Google Calendar API, Outlook API
+[Git]: https://img.shields.io/badge/Git-F05032?logo=git&logoColor=fff
+[Git-url]: https://git-scm.com/
+
+[TypeScript]: https://img.shields.io/badge/TypeScript-blue?logo=typescript&logoColor=white
+[TypeScript-url]: https://www.typescriptlang.org
+
+[Django]: https://img.shields.io/badge/Django-092E20?logo=django&logoColor=white
+[Django-url]: https://www.djangoproject.com
+
+[DRF]: https://img.shields.io/badge/DRF-ff1709?logo=django&logoColor=white&label=DRF
+[DRF-url]: https://www.django-rest-framework.org
+
+[JWT]: https://img.shields.io/badge/JWT-000000?logo=jsonwebtokens&logoColor=white
+[JWT-url]: https://jwt.io
