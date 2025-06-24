@@ -1,3 +1,4 @@
+#view/event_views.py
 from django.conf import settings
 from ..models import EventParticipation, Group, UserEvent, GroupMembership
 from ..serializers import UserEventSerializer, EventSubmissionSerializer

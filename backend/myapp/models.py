@@ -53,11 +53,8 @@ class UserEvent(models.Model):
     location = models.CharField(max_length=200, blank=True)
     
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
-    group = models.ForeignKey(
-        Group,
-        on_delete=models.CASCADE,
-        related_name="events"
-    )
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, null=True, blank=True)
+
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -70,8 +67,13 @@ class UserEvent(models.Model):
     def clean(self):
         if self.type == 'solo' and not self.user:
             raise ValidationError("Solo events must have a user.")
-        if self.type == 'group' and not self.group:
-            raise ValidationError("Group events must have a group.")    
+        if self.type == 'group':
+            try:
+                _ = self.group
+            except self.__class__.group.RelatedObjectDoesNotExist:
+                raise ValidationError("Group events must be associated with a group.")
+            if self.group is None:
+                raise ValidationError("Group events must be associated with a group.")    
 
     def __str__(self):
         return f"{self.get_type_display()} on {self.date} at {self.start_time}"
