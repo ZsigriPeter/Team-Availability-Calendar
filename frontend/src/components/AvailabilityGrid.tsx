@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { UserEvent, TimeSlot } from '@/interfaces';
+import { UserEvent } from '@/interfaces';
 import {
   format,
   parseISO,
@@ -36,7 +36,6 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
   onDateChange,
   onAddToGoogleCalendar,
 }) => {
-  const [selectedSlots, setSelectedSlots] = useState<TimeSlot[]>([]);
   const [isModalExtOpen, setModalExtOpen] = useState(false);
   const [myGroups, setMyGroups] = useState<{ id: string; name: string }[]>([]);
   const [editingEvent, setEditingEvent] = useState<UserEvent | null>(null);
@@ -57,22 +56,11 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
       const groups = await getMyGroups(navigate);
       setMyGroups(groups);
 
-      // Initialize group filter visibility
       const groupFilterDefaults = Object.fromEntries(groups.map(g => [parseInt(g.id), true]));
       setFilters(prev => ({ ...prev, group: groupFilterDefaults }));
     };
     fetchGroups();
   }, [navigate]);
-
-  const toggleSlot = (day: Date, hour_start: string, hour_end: string) => {
-    const dateStr = format(day, 'yyyy-MM-dd');
-    const exists = selectedSlots.find(slot => slot.date === dateStr && slot.hour_start === hour_start && slot.hour_end === hour_end);
-    if (exists) {
-      setSelectedSlots(prev => prev.filter(slot => !(slot.date === dateStr && slot.hour_start === hour_start && slot.hour_end === hour_end)));
-    } else {
-      setSelectedSlots(prev => [...prev, { date: dateStr, hour_start, hour_end }]);
-    }
-  };
 
   const handleExtConfirm = async (
     type: 'solo' | 'group',
@@ -124,8 +112,6 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
     }
     return false;
   });
-
-
 
   return (
     <div className="w-screen h-screen flex flex-col bg-white dark:bg-gray-900 text-black dark:text-white p-2 overflow-hidden">
@@ -190,18 +176,10 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
                 {hour}
               </div>
               {daysOfWeek.map((day) => {
-                const dateStr = format(day, 'yyyy-MM-dd');
-                const hourEnd = String(parseInt(hour.split(':')[0]) + 1).padStart(2, '0') + ':00';
-                const selected = selectedSlots.some(slot =>
-                  slot.date === dateStr && slot.hour_start === hour
-                );
-
                 return (
                   <div
                     key={day.toISOString() + hour}
-                    onClick={() => toggleSlot(day, hour, hourEnd)}
-                    className={`h-8 border hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer ${selected ? 'bg-blue-400 dark:bg-blue-600' : ''
-                      }`}
+                    className={`h-8 border hover:bg-gray-200 dark:hover:bg-gray-700`}
                   />
                 );
               })}
@@ -225,10 +203,10 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
             const height = ((endMinutes - startMinutes) / 60) * HOUR_HEIGHT_PX;
 
             const bgClass = event.type === 'solo'
-              ? 'bg-green-300 dark:bg-green-600 hover:bg-green-400 dark:hover:bg-green-500'
+              ? 'bg-green-300 dark:bg-green-600 hover:bg-green-400 dark:hover:bg-green-500 cursor-pointer'
               : event.group !== null && groupColors[event.group]
                 ? groupColors[event.group]
-                : 'bg-orange-300 dark:bg-orange-600 hover:bg-orange-400 dark:hover:bg-orange-500';
+                : 'bg-orange-300 dark:bg-orange-600 hover:bg-orange-400 dark:hover:bg-orange-500 cursor-pointer';
 
             const isShortEvent = (endMinutes - startMinutes) < 60;
 
