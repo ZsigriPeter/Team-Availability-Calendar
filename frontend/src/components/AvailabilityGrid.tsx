@@ -13,6 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import { getMyGroups } from '@/api/groups';
 import { EventModalExtended } from './EventModalExtended';
 import { ViewEventModal } from './ViewEventModal';
+import { FilterModal } from './FilterModal';
 
 const hours = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00`);
 
@@ -45,10 +46,20 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const daysOfWeek = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [filters, setFilters] = useState<{
+    solo: boolean;
+    group: Record<number, boolean>;
+  }>({ solo: true, group: {} });
+
   useEffect(() => {
     const fetchGroups = async () => {
       const groups = await getMyGroups(navigate);
       setMyGroups(groups);
+
+      // Initialize group filter visibility
+      const groupFilterDefaults = Object.fromEntries(groups.map(g => [parseInt(g.id), true]));
+      setFilters(prev => ({ ...prev, group: groupFilterDefaults }));
     };
     fetchGroups();
   }, [navigate]);
@@ -106,6 +117,16 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
     4: 'bg-red-300 dark:bg-red-600 hover:bg-red-400 dark:hover:bg-red-500',
   };
 
+  const filteredEvents = eventData.filter(event => {
+    if (event.type === 'solo') return filters.solo;
+    if (event.type === 'group' && event.group !== null) {
+      return filters.group[event.group] ?? false;
+    }
+    return false;
+  });
+
+
+
   return (
     <div className="w-screen h-screen flex flex-col bg-white dark:bg-gray-900 text-black dark:text-white p-2 overflow-hidden">
       <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
@@ -128,6 +149,13 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
           >
             Add Event
           </button>
+          <button
+            onClick={() => setShowFilterModal(true)}
+            className="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-sm"
+          >
+            Filter
+          </button>
+
         </div>
 
         <input
@@ -172,16 +200,15 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
                   <div
                     key={day.toISOString() + hour}
                     onClick={() => toggleSlot(day, hour, hourEnd)}
-                    className={`h-8 border hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer ${
-                      selected ? 'bg-blue-400 dark:bg-blue-600' : ''
-                    }`}
+                    className={`h-8 border hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer ${selected ? 'bg-blue-400 dark:bg-blue-600' : ''
+                      }`}
                   />
                 );
               })}
             </React.Fragment>
           ))}
 
-          {eventData.map(event => {
+          {filteredEvents.map(event => {
             const eventDate = parseISO(event.date);
             const dayIndex = daysOfWeek.findIndex(day => isSameDay(eventDate, day));
             if (dayIndex === -1) return null;
@@ -268,6 +295,13 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
           }}
         />
       )}
+      <FilterModal
+        show={showFilterModal}
+        onClose={() => setShowFilterModal(false)}
+        filters={filters}
+        onFilterChange={setFilters}
+        groups={myGroups}
+      />
     </div>
   );
 };

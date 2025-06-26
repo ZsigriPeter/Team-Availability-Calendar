@@ -37,7 +37,6 @@ export const ViewEventModal: React.FC<ViewEventModalProps> = ({ event, onClose, 
                 .then(role => {
                     if (role) {
                         setMyRole(role.role);
-                        console.log("User role in group:", role.role);
                     } else {
                         toast.error('Failed to fetch group role.');
                     }
